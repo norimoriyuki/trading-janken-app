@@ -46,7 +46,7 @@ export default function JankenGame({
       {/* Enemy Section */}
       <View style={styles.enemyContainer}>
         <Text style={styles.enemyText}>ランダムロボ</Text>
-        <Image source={enemyImage as any} style={styles.enemyImage} />
+        {/* <Image source={enemyImage as any} style={styles.enemyImage} /> */}
       </View>
 
       {/* Computer Cards */}
