@@ -15,6 +15,7 @@ export default function Index() {
       <Text>💩</Text>
       <Text>Edit app/index.tsx to edit this screen.</Text>
       <Link href="/jankengame">Go to Janken Game</Link>
+      <Link href="/result">Go to Result</Link>
       
       <Counter />
       <ShowDog />
