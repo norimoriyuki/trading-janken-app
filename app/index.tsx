@@ -1,4 +1,7 @@
 import { Text, View } from "react-native";
+import Counter from "../components/Counter";
+import ShowDog from "../components/ShowDog";
+import { Link, Stack } from 'expo-router';
 
 export default function Index() {
   return (
@@ -10,6 +13,11 @@ export default function Index() {
       }}
     >
       <Text>💩</Text>
+      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <Link href="/jankengame">Go to Janken Game</Link>
+      
+      <Counter />
+      <ShowDog />
     </View>
   );
 }
