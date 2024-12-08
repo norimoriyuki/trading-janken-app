@@ -3,8 +3,8 @@
 import React from 'react';
 import ResultScreen from '../screens/Result';
 
-const App = () => {
+const Result = () => {
     return <ResultScreen />;
 };
 
-export default App;
+export default Result;
