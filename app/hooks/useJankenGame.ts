@@ -18,12 +18,12 @@ export const useJankenGame = (onBackClick: () => void) => {
     "../../assets/robot1_blue.png"
   );
   const enemyImages = [
-    require("../../assets/robot1_blue.png"),
-    require("../../assets/robot2_green.png"),
-    require("../../assets/robot3.png"),
-    require("../../assets/robot4_orange.png"),
-    require("../../assets/robot5_red.png"),
-    require("../../assets/robot6_purple.png"),
+    require("@assets/robot1_blue.png"),
+    require("@assets/robot2_green.png"),
+    require("@assets/robot3.png"),
+    require("@assets/robot4_orange.png"),
+    require("@assets/robot5_red.png"),
+    require("@assets/robot6_purple.png"),
   ];
 
   // ゲーム結果の判定

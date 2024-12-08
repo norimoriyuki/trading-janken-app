@@ -9,6 +9,7 @@ module.exports = function (api) {
             root: ['./'], // プロジェクトルートをベースに
             alias: {
               '@': './', // TypeScriptで定義した`@`エイリアスを同じように設定
+              '@assets': './assets',
             },
             extensions: ['.ts', '.tsx', '.js', '.json'], // 解決するファイル拡張子
           },

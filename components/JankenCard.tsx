@@ -42,10 +42,7 @@ export default function JankenCard({
 
   // レベルに応じて色を調整
   const borderColor = adjustColorBrightness(baseColor);
-  const imageSource =
-  choice.img && choice.img.startsWith("http")
-    ? { uri: choice.img }
-    : require("../assets/zari.png");
+  const imageSource = choice.img ? choice.img : require("@assets/zari.png");
 
   return (
     <View
@@ -80,7 +77,7 @@ export default function JankenCard({
       }}
       >
       <Image
-        source={{ uri: imageSource.img }}
+        source={imageSource}
         style={{
         width: 80,
         height: 80,
