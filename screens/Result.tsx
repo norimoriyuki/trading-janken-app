@@ -1,7 +1,11 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useSelector } from "react-redux";
+import { RootState } from "../app/stores";
 
 export default function ResultScreen() {
+    const winCount = useSelector((state: RootState) => state.game.winCount);
+
   return (
     <View style={styles.container}>
       {/* ヘッダー */}
@@ -10,7 +14,7 @@ export default function ResultScreen() {
       {/* スコアセクション */}
       <View style={styles.scoreSection}>
         <Text style={styles.scoreText}>あなたのスコア</Text>
-        <Text style={styles.score}>88点</Text>
+        <Text style={styles.score}>{winCount}点</Text>
       </View>
 
       {/* ランクとメッセージ */}
