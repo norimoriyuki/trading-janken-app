@@ -8,9 +8,9 @@ import {
   Modal,
   ScrollView
 } from "react-native";
-import JankenCard from "@/components/JankenCard";
-import ResultWindow from "@/components/ResultWindow";
-import ScoreWindow from "@/components/ScoreWindow";
+import JankenCard from "../components/JankenCard";
+import ResultWindow from "../components/ResultWindow";
+import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import { ChoiceType } from "../app/types/models";
 

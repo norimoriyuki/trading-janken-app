@@ -1,7 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+
 
 export default function HomeScreen() {
+const router = useRouter();
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -11,23 +15,26 @@ export default function HomeScreen() {
 
       {/* Stage List */}
       <ScrollView style={styles.stageList}>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 1</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 1</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 2</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 2</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 3</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 3</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 4</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 4</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 5</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 5</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem}>
-          <Text style={styles.stageText}>Stage 6</Text>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
+            <Text style={styles.stageText}>Stage 6</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/result')}>
+            <Text style={styles.stageText}>結果画面</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
