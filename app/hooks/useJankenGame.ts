@@ -15,7 +15,7 @@ export const useJankenGame = (onBackClick: () => void) => {
   const [drawCount, setDrawCount] = useState<number>(0);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
-    "../../assets/robot1_blue.png"
+    require("@assets/robot1_blue.png")
   );
   const enemyImages = [
     require("@assets/robot1_blue.png"),
