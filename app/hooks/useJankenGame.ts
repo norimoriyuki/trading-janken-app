@@ -1,7 +1,11 @@
 import { useState, useEffect } from "react";
 import { ChoiceType, choices } from "@/app/types/models";
+import { RootState } from "../stores";
+import { incrementWinCount, decrementLife, resetLifeAndWinCount } from "../stores/gameSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 export const useJankenGame = (onBackClick: () => void) => {
+  const DEFAULT_DRAW_COUNT = 0;
   const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
   const [playerChoices, setPlayerChoices] = useState<ChoiceType[]>([]);
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
@@ -10,9 +14,9 @@ export const useJankenGame = (onBackClick: () => void) => {
     computerChoice: ChoiceType;
     result: string;
   } | null>(null);
-  const [life, setLife] = useState<number>(5);
-  const [winCount, setWinCount] = useState<number>(0);
-  const [drawCount, setDrawCount] = useState<number>(0);
+  const life = useSelector((state: RootState) => state.game.life);
+  const winCount = useSelector((state: RootState) => state.game.winCount);
+  const [drawCount, setDrawCount] = useState<number>(DEFAULT_DRAW_COUNT);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
     "../../assets/robot1_blue.png"
@@ -25,6 +29,7 @@ export const useJankenGame = (onBackClick: () => void) => {
     require("@assets/robot5_red.png"),
     require("@assets/robot6_purple.png"),
   ];
+  const dispatch = useDispatch();
 
   // ゲーム結果の判定
   const getResult = (
@@ -123,10 +128,12 @@ export const useJankenGame = (onBackClick: () => void) => {
     setComputerChoices(updatedComputerChoices);
 
     if (result === "win") {
-      setWinCount(winCount + 1);
+      console.log("incrementWinCount");
+      dispatch(incrementWinCount());
       setDrawCount(0);
     } else if (result === "lose") {
-      setLife(life - 1);
+      console.log("decrementLife");
+      dispatch(decrementLife());
       setDrawCount(0);
     } else {
       setDrawCount(drawCount + 1);
@@ -138,8 +145,7 @@ export const useJankenGame = (onBackClick: () => void) => {
   const resetGame = () => {
     setPlayerChoices(playerChoices);
     setComputerChoices(getRandomChoices(choices, 3, winCount));
-    setLife(5);
-    setWinCount(0);
+    resetLifeAndWinCount();
     setDrawCount(0);
     getRandomEnemyImage();
   };
