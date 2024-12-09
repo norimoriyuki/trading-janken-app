@@ -1,8 +1,13 @@
-import React from "react";
-import JankenCard from "./JankenCard";
-// import "./ResultWindow.css";
-import { ChoiceType } from "@/app/types/models";
-import { View, Text, TouchableOpacity } from "react-native";
+import React from 'react';
+import {
+  View,
+  Text,
+  TouchableWithoutFeedback,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import JankenCard from './JankenCard';
+import { ChoiceType } from './choices';
 
 interface ResultWindowProps {
   showResult: {
@@ -21,55 +26,110 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
 }) => {
   if (!showResult) return null;
 
-  const backgroundColor = "#d3d3d3";
-
   return (
-    <TouchableOpacity className="overlay" onPress={closeResult}>
-      <View className="result-window" style={{ backgroundColor }}>
-        <View className="result-container">
-          {/* 相手の手 */}
-          <View className="choice choice-computer">
+    <TouchableWithoutFeedback onPress={closeResult}>
+      <View style={styles.overlay}>
+        <View style={styles.resultWindow}>
+          <View style={styles.resultContainer}>
+            {/* Computer's choice */}
+            <View style={styles.choice}>
+              <JankenCard
+                choice={showResult.computerChoice}
+                onClick={() => {}}
+                onRightClick={() => {}}
+              />
+            </View>
+          </View>
+
+          <Text style={styles.resultText}>
+            {showResult.result === 'win'
+              ? 'WIN'
+              : showResult.result === 'lose'
+              ? 'LOSE'
+              : `あいこ${drawCount > 0 ? `（${drawCount}/3）` : '3/3'}`}
+          </Text>
+
+          <View style={styles.resultIcon}>
+            {((showResult.result === 'win') ||
+              (showResult.result === 'reset')) && (
+              <View style={styles.iconContainer}>
+                <Text style={styles.starIcon}>★</Text>
+                <Text style={styles.plusMinus}>+1</Text>
+              </View>
+            )}
+            {showResult.result === 'lose' && (
+              <View style={styles.iconContainer}>
+                <Text style={styles.heartIcon}>❤</Text>
+                <Text style={styles.plusMinus}>-1</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.choice}>
             <JankenCard
-              choice={showResult.computerChoice}
+              choice={showResult.playerChoice}
               onClick={() => {}}
               onRightClick={() => {}}
             />
           </View>
         </View>
-
-        <View>
-          <Text>
-            {showResult.result === "win"
-              ? "WIN"
-              : showResult.result === "lose"
-              ? "LOSE"
-              : `あいこ${drawCount > 0 ? `（${drawCount}/3）` : "3/3"}`}
-          </Text>
-        </View>
-
-        <View className="result-icon">
-          {(showResult.result === "win" || showResult.result === "reset") && (
-            <Text className="star-icon">
-              ★<Text className="plus-minus">+1</Text>
-            </Text>
-          )}
-          {showResult.result === "lose" && (
-            <Text className="heart-icon">
-              ❤<Text className="plus-minus">-1</Text>
-            </Text>
-          )}
-        </View>
-
-        <View className="choice choice-player">
-          <JankenCard
-            choice={showResult.playerChoice}
-            onClick={() => {}}
-            onRightClick={() => {}}
-          />
-        </View>
       </View>
-    </TouchableOpacity>
+    </TouchableWithoutFeedback>
   );
 };
+
+const styles = StyleSheet.create({
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  resultWindow: {
+    backgroundColor: '#d3d3d3',
+    padding: 20,
+    borderRadius: 10,
+    width: Dimensions.get('window').width * 0.8,
+    alignItems: 'center',
+  },
+  resultContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  choice: {
+    marginVertical: 10,
+  },
+  resultText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginVertical: 10,
+    textAlign: 'center',
+  },
+  resultIcon: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginVertical: 10,
+  },
+  iconContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starIcon: {
+    fontSize: 24,
+    color: 'gold',
+  },
+  heartIcon: {
+    fontSize: 24,
+    color: 'red',
+  },
+  plusMinus: {
+    fontSize: 16,
+    marginLeft: 5,
+  },
+});
 
 export default ResultWindow;
