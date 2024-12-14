@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import JankenCard from './JankenCard';
-import { ChoiceType } from './choices';
+import { ChoiceType } from '@/app/types/models';
 
 interface ResultWindowProps {
   showResult: {
