@@ -1,5 +1,6 @@
 // import "./JankenCard.css";
 import { Image, View, Text } from "react-native";
+import { GestureHandlerRootView, PanGestureHandler, PanGestureHandlerEventPayload } from 'react-native-gesture-handler';
 
 interface JankenCardProps {
   choice: {
@@ -10,7 +11,7 @@ interface JankenCardProps {
     level: number;
   };
   onClick: () => void;
-  onRightClick: (event: React.MouseEvent) => void;
+  onRightClick: () => void;
   isPlayerHand?: boolean;
   className?: string; // classNameを追加
 }
@@ -44,48 +45,69 @@ export default function JankenCard({
   const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img ? choice.img : require("@assets/zari.png");
 
-  return (
+  const onGestureEvent = ({ nativeEvent }: { nativeEvent: PanGestureHandlerEventPayload }) => {
+    if (nativeEvent.translationY < -50 && isPlayerHand) {
+      onClick(); // スワイプアップで選択
+    }
+  };
+
+  const handlePress = () => {
+    if (isPlayerHand) {
+      onRightClick();
+    }
+  };
+
+  const cardContent = (
     <View
       style={{
-      margin: 16,
-      padding: 16,
-      borderWidth: 2,
-      borderColor: borderColor,
-      borderRadius: 16,
-      backgroundColor: "#f9f9f9",
-      width: 80,
-      height: 128,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "space-around",
-      boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.2)",
-      position: "relative",
-      overflow: "hidden",
+        margin: 16,
+        padding: 16,
+        borderWidth: 2,
+        borderColor: borderColor,
+        borderRadius: 16,
+        backgroundColor: "#f9f9f9",
+        width: 80,
+        height: 128,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "space-around",
+        position: "relative",
+        overflow: "hidden",
       }}
-      onTouchStart={onClick}
-      // onContextMenu={onRightClick}
+      onTouchStart={handlePress}
     >
       <View
-      style={{
-        position: "relative",
-        width: 80,
-        height: 80,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      >
-      <Image
-        source={imageSource}
         style={{
-        width: 80,
-        height: 80,
-        resizeMode: "contain",
+          position: "relative",
+          width: 80,
+          height: 80,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-      />
+      >
+        <Image
+          source={imageSource}
+          style={{
+            width: 80,
+            height: 80,
+            resizeMode: "contain",
+          }}
+        />
       </View>
       <Text style={{ marginTop: 8, fontWeight: "bold" }}>{choice.name}</Text>
     </View>
+  );
+
+  // プレイヤーの手札の場合のみスワイプ機能を追加
+  return isPlayerHand ? (
+    <GestureHandlerRootView>
+      <PanGestureHandler onGestureEvent={onGestureEvent}>
+        {cardContent}
+      </PanGestureHandler>
+    </GestureHandlerRootView>
+  ) : (
+    cardContent
   );
 }

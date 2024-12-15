@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import { ChoiceType } from "../app/types/models";
+import CardDetailWindow from "../components/CardDetailWindow";
 
 
 export default function JankenGame({
@@ -35,6 +36,20 @@ export default function JankenGame({
     closeResult,
   } = useJankenGame(onBackClick);
 
+  const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
+  const [showCardDetail, setShowCardDetail] = useState(false);
+
+  const handleCardPress = (choice: ChoiceType) => {
+    console.log("handleCardPress", choice);
+    setSelectedCard(choice);
+    setShowCardDetail(true);
+  };
+
+  const closeCardDetail = () => {
+    setShowCardDetail(false);
+    setSelectedCard(null);
+  };
+
   return (
     <ScrollView style={styles.container}>
       {/* Header */}
@@ -46,7 +61,12 @@ export default function JankenGame({
       {/* Enemy Section */}
       <View style={styles.enemyContainer}>
         <Text style={styles.enemyText}>ランダムロボ</Text>
-        <Image source={enemyImage} style={styles.enemyImage} />
+        <Image 
+          source={typeof enemyImage === 'string' 
+            ? { uri: enemyImage } 
+            : enemyImage} 
+          style={styles.enemyImage} 
+        />
       </View>
 
       {/* Computer Cards */}
@@ -70,7 +90,7 @@ export default function JankenGame({
             key={index}
             choice={choice}
             onClick={() => handlePlayerChoice(index)}
-            onRightClick={() => {}}
+            onRightClick={() => handleCardPress(choice)}
             isPlayerHand
           />
         ))}
@@ -95,6 +115,14 @@ export default function JankenGame({
 
       {showScoreWindow && (
         <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
+      )}
+
+      {/* Card Detail Modal */}
+      {showCardDetail && selectedCard && (
+        <CardDetailWindow
+          choice={selectedCard}
+          onClose={closeCardDetail}
+        />
       )}
     </ScrollView>
   );
