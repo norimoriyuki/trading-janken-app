@@ -35,8 +35,12 @@ export default function JankenCard({
 
   const panResponder = useRef(
     PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+      },
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+      },
 
       onPanResponderGrant: () => {
         setHasTriggeredSwipe(false);
@@ -86,6 +90,7 @@ export default function JankenCard({
   return (
     <View {...panResponder.panHandlers}>
       <Pressable
+        hitSlop={5}
         onPress={handlePress}
         style={{
           margin: 16,
