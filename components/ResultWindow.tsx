@@ -35,8 +35,8 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
             <View style={styles.choice}>
               <JankenCard
                 choice={showResult.computerChoice}
-                onClick={() => {}}
-                onRightClick={() => {}}
+                onSwipeUp={() => {}}
+                onCardPress={() => {}}
               />
             </View>
           </View>
@@ -68,8 +68,8 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
           <View style={styles.choice}>
             <JankenCard
               choice={showResult.playerChoice}
-              onClick={() => {}}
-              onRightClick={() => {}}
+              onSwipeUp={() => {}}
+              onCardPress={() => {}}
             />
           </View>
         </View>

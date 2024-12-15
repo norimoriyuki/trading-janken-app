@@ -1,6 +1,5 @@
-// import "./JankenCard.css";
-import { Image, View, Text } from "react-native";
-import { GestureHandlerRootView, PanGestureHandler, PanGestureHandlerEventPayload } from 'react-native-gesture-handler';
+import { Image, View, Text, Pressable, PanResponder, GestureResponderEvent, PanResponderGestureState } from "react-native";
+import { useState, useRef } from 'react';
 
 interface JankenCardProps {
   choice: {
@@ -10,15 +9,14 @@ interface JankenCardProps {
     type: string;
     level: number;
   };
-  onClick: () => void;
-  onRightClick: () => void;
+  onSwipeUp: () => void;
+  onCardPress: () => void;
   isPlayerHand?: boolean;
-  className?: string; // classNameを追加
+  className?: string;
 }
 
-// レベルに応じて明度を調整する関数
 const adjustColorBrightness = (color: string): string => {
-  const brightnessAdjustment = 1; //- level * 0.9; // レベルが高いほど色を暗くする
+  const brightnessAdjustment = 1;
   const [r, g, b] = color.match(/\d+/g)!.map(Number);
   return `rgb(${Math.floor(r * brightnessAdjustment)}, ${Math.floor(
     g * brightnessAdjustment
@@ -27,87 +25,106 @@ const adjustColorBrightness = (color: string): string => {
 
 export default function JankenCard({
   choice,
-  onClick,
-  onRightClick,
+  onSwipeUp,
+  onCardPress,
   isPlayerHand = false,
-  className = "", // デフォルト値を設定
+  className = "",
 }: JankenCardProps) {
-  // タイプに基づいた基本色
+  const [hasTriggeredSwipe, setHasTriggeredSwipe] = useState(false);
+  const isSwipingRef = useRef(false);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+
+      onPanResponderGrant: () => {
+        setHasTriggeredSwipe(false);
+        isSwipingRef.current = false;
+      },
+
+      onPanResponderMove: (_, gestureState) => {
+        if (
+          gestureState.dy < -50 && 
+          isPlayerHand && 
+          !hasTriggeredSwipe && 
+          !isSwipingRef.current
+        ) {
+          isSwipingRef.current = true;
+          onSwipeUp();
+          setHasTriggeredSwipe(true);
+        }
+      },
+
+      onPanResponderRelease: () => {
+        setHasTriggeredSwipe(false);
+        isSwipingRef.current = false;
+      },
+
+      onPanResponderTerminate: () => {
+        setHasTriggeredSwipe(false);
+        isSwipingRef.current = false;
+      },
+    })
+  ).current;
+
   const baseColor =
     {
       rock: "rgb(153, 51, 51)",
-      scissors: "rgb(204, 153, 51)", // 赤系
-      paper: "rgb(51, 102, 153)", // 青系
-      other: "rgb(211, 211, 211)", // グレー系
+      scissors: "rgb(204, 153, 51)",
+      paper: "rgb(51, 102, 153)",
+      other: "rgb(211, 211, 211)",
     }[choice.type] || "rgb(255, 255, 255)";
 
-  // レベルに応じて色を調整
   const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img ? choice.img : require("@assets/zari.png");
 
-  const onGestureEvent = ({ nativeEvent }: { nativeEvent: PanGestureHandlerEventPayload }) => {
-    if (nativeEvent.translationY < -50 && isPlayerHand) {
-      onClick(); // スワイプアップで選択
-    }
-  };
-
   const handlePress = () => {
-    if (isPlayerHand) {
-      onRightClick();
-    }
+    onCardPress();
   };
 
-  const cardContent = (
-    <View
-      style={{
-        margin: 16,
-        padding: 16,
-        borderWidth: 2,
-        borderColor: borderColor,
-        borderRadius: 16,
-        backgroundColor: "#f9f9f9",
-        width: 80,
-        height: 128,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "space-around",
-        position: "relative",
-        overflow: "hidden",
-      }}
-      onTouchStart={handlePress}
-    >
-      <View
+  return (
+    <View {...panResponder.panHandlers}>
+      <Pressable
+        onPress={handlePress}
         style={{
-          position: "relative",
+          margin: 16,
+          padding: 16,
+          borderWidth: 2,
+          borderColor: borderColor,
+          borderRadius: 16,
+          backgroundColor: "#f9f9f9",
           width: 80,
-          height: 80,
+          height: 128,
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "space-around",
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <Image
-          source={imageSource}
+        <View
           style={{
+            position: "relative",
             width: 80,
             height: 80,
-            resizeMode: "contain",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
-      </View>
-      <Text style={{ marginTop: 8, fontWeight: "bold" }}>{choice.name}</Text>
+        >
+          <Image
+            source={imageSource}
+            style={{
+              width: 80,
+              height: 80,
+              resizeMode: "contain",
+            }}
+          />
+        </View>
+        <Text style={{ marginTop: 8, fontWeight: "bold" }}>{choice.name}</Text>
+      </Pressable>
     </View>
-  );
-
-  // プレイヤーの手札の場合のみスワイプ機能を追加
-  return isPlayerHand ? (
-    <GestureHandlerRootView>
-      <PanGestureHandler onGestureEvent={onGestureEvent}>
-        {cardContent}
-      </PanGestureHandler>
-    </GestureHandlerRootView>
-  ) : (
-    cardContent
   );
 }

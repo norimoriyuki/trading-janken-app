@@ -76,8 +76,8 @@ export default function JankenGame({
           <JankenCard
             key={index}
             choice={choice}
-            onClick={() => {}}
-            onRightClick={() => {}}
+            onSwipeUp={() => {}}
+            onCardPress={() => handleCardPress(choice)}
           />
         ))}
       </View>
@@ -89,8 +89,8 @@ export default function JankenGame({
           <JankenCard
             key={index}
             choice={choice}
-            onClick={() => handlePlayerChoice(index)}
-            onRightClick={() => handleCardPress(choice)}
+            onSwipeUp={() => handlePlayerChoice(index)}
+            onCardPress={() => handleCardPress(choice)}
             isPlayerHand
           />
         ))}
