@@ -17,7 +17,12 @@ interface JankenCardProps {
 
 const adjustColorBrightness = (color: string): string => {
   const brightnessAdjustment = 1;
-  const [r, g, b] = color.match(/\d+/g)!.map(Number);
+  const match = color.match(/\d+/g);
+  if (!match || match.length < 3) {
+    console.error('Invalid color format:', color);
+    return color;
+  }
+  const [r, g, b] = match.map(Number);
   return `rgb(${Math.floor(r * brightnessAdjustment)}, ${Math.floor(
     g * brightnessAdjustment
   )}, ${Math.floor(b * brightnessAdjustment)})`;
