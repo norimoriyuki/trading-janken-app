@@ -1,5 +1,5 @@
-import { Image, View, Text, Pressable, PanResponder, GestureResponderEvent, PanResponderGestureState } from "react-native";
-import { useState, useRef } from 'react';
+import { Image, View, Text, Pressable, PanResponder, Animated } from "react-native";
+import { useRef } from 'react';
 
 interface JankenCardProps {
   choice: {
@@ -35,8 +35,8 @@ export default function JankenCard({
   isPlayerHand = false,
   className = "",
 }: JankenCardProps) {
-  const [hasTriggeredSwipe, setHasTriggeredSwipe] = useState(false);
   const isSwipingRef = useRef(false);
+  const pan = useRef(new Animated.ValueXY()).current;
 
   const panResponder = useRef(
     PanResponder.create({
@@ -46,54 +46,52 @@ export default function JankenCard({
       onMoveShouldSetPanResponder: (evt, gestureState) => {
         return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
       },
-
       onPanResponderGrant: () => {
-        setHasTriggeredSwipe(false);
-        isSwipingRef.current = false;
+        isSwipingRef.current = true;
       },
-
-      onPanResponderMove: (_, gestureState) => {
-        if (
-          gestureState.dy < -50 && 
-          isPlayerHand && 
-          !hasTriggeredSwipe && 
-          !isSwipingRef.current
-        ) {
-          isSwipingRef.current = true;
+      onPanResponderMove: isPlayerHand
+        ? Animated.event([null, { dx: pan.x, dy: pan.y }], {
+            useNativeDriver: false,
+          })
+        : undefined,
+      onPanResponderRelease: (_, gestureState) => {
+        pan.setValue({ x: 0, y: 0 });
+        if (isPlayerHand && gestureState.dy < -50) {
           onSwipeUp();
-          setHasTriggeredSwipe(true);
+        } else {
+          isSwipingRef.current = false;
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
         }
       },
-
-      onPanResponderRelease: () => {
-        setHasTriggeredSwipe(false);
-        isSwipingRef.current = false;
-      },
-
       onPanResponderTerminate: () => {
-        setHasTriggeredSwipe(false);
-        isSwipingRef.current = false;
+        Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
       },
     })
   ).current;
 
-  const baseColor =
-    {
-      rock: "rgb(153, 51, 51)",
-      scissors: "rgb(204, 153, 51)",
-      paper: "rgb(51, 102, 153)",
-      other: "rgb(211, 211, 211)",
-    }[choice.type] || "rgb(255, 255, 255)";
-
-  const borderColor = adjustColorBrightness(baseColor);
-  const imageSource = choice.img ? choice.img : require("@assets/zari.png");
-
   const handlePress = () => {
-    onCardPress();
+    if (!isSwipingRef.current) {
+      onCardPress();
+    }
   };
 
+  const baseColor = {
+    rock: "rgb(153, 51, 51)",
+    scissors: "rgb(204, 153, 51)",
+    paper: "rgb(51, 102, 153)",
+    other: "rgb(211, 211, 211)",
+  }[choice.type] || "rgb(255, 255, 255)";
+
+  const borderColor = adjustColorBrightness(baseColor);
+  const imageSource = choice.img || require("@assets/zari.png");
+
   return (
-    <View {...panResponder.panHandlers}>
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        isPlayerHand && { transform: [{ translateX: pan.x }, { translateY: pan.y }] },
+      ]}
+    >
       <Pressable
         hitSlop={5}
         onPress={handlePress}
@@ -135,6 +133,6 @@ export default function JankenCard({
         </View>
         <Text style={{ marginTop: 8, fontWeight: "bold" }}>{choice.name}</Text>
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }
