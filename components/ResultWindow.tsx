@@ -7,7 +7,7 @@ import {
   Dimensions,
 } from 'react-native';
 import JankenCard from './JankenCard';
-import { ChoiceType } from './choices';
+import { ChoiceType } from '@/app/types/models';
 
 interface ResultWindowProps {
   showResult: {
@@ -35,8 +35,8 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
             <View style={styles.choice}>
               <JankenCard
                 choice={showResult.computerChoice}
-                onClick={() => {}}
-                onRightClick={() => {}}
+                onSwipeUp={() => {}}
+                onCardPress={() => {}}
               />
             </View>
           </View>
@@ -68,8 +68,8 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
           <View style={styles.choice}>
             <JankenCard
               choice={showResult.playerChoice}
-              onClick={() => {}}
-              onRightClick={() => {}}
+              onSwipeUp={() => {}}
+              onCardPress={() => {}}
             />
           </View>
         </View>
