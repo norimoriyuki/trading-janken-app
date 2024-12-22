@@ -32,6 +32,7 @@ export default function JankenGame({
     life,
     winCount,
     enemyImage,
+    drawCount,
     handlePlayerChoice,
     resetGame,
     closeScoreWindow,
@@ -102,6 +103,7 @@ export default function JankenGame({
       <View style={styles.playerContainer}>
         <Text style={styles.playerText}>ライフ: {life}</Text>
         <Text style={styles.playerText}>勝利数: {winCount}</Text>
+        <Text style={styles.playerText}>引き分け: {drawCount}</Text>
       </View>
 
       {/* Result Modal */}
