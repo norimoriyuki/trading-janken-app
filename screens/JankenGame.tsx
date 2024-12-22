@@ -51,7 +51,7 @@ export default function JankenGame({
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Button title="降参" onPress={resetGame} />
@@ -124,7 +124,7 @@ export default function JankenGame({
           onClose={closeCardDetail}
         />
       )}
-    </ScrollView>
+    </View>
   );
 }
 
