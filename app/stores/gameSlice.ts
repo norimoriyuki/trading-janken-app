@@ -1,13 +1,16 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { stages } from "../types/stages";
 import { ChoiceType, choices } from "@/app/types/models";
 import getRandomChoices from "../lib/get_random_choices";
+import getResult from "../lib/get_result";
+import { RootState } from "./index";
 
 interface StageState {
   life: number;
   winCount: number;
   computerChoices: ChoiceType[];
   playerChoices: ChoiceType[];
+  drawCount: number;
 }
 
 interface GameState {
@@ -29,8 +32,73 @@ Object.keys(stages).forEach((stageId) => {
     winCount: DEFAULT_WIN_COUNT,
     computerChoices: DEFAULT_COMPUTER_CHOICES,
     playerChoices: DEFAULT_PLAYER_CHOICES,
+    drawCount: 0,
   };
 });
+
+export const handlePlayerMove = createAsyncThunk<
+  {
+    playerChoice: ChoiceType;
+    computerChoice: ChoiceType;
+    result: "win" | "lose" | "draw";
+  },
+  { 
+    playerIndex: number; 
+    stageId: string 
+  }
+>(
+  'game/handlePlayerMove',
+  async ({ playerIndex, stageId }, { getState, dispatch }) => {
+    const state = getState() as RootState;
+    const currentStage = state.game.stages[stageId];
+    
+    if (!currentStage) {
+      throw new Error("Stage not found");
+    }
+
+    const { playerChoices, computerChoices, drawCount } = currentStage;
+    const randomComputerIndex = Math.floor(Math.random() * computerChoices.length);
+    
+    const playerChoice = playerChoices[playerIndex];
+    const computerChoice = computerChoices[randomComputerIndex];
+    const result = getResult(playerChoice, computerChoice);
+
+    // スコアの更新
+    if (result === "win") {
+      dispatch(incrementWinCount({ stageId }));
+    } else if (result === "lose") {
+      dispatch(decrementLife({ stageId }));
+    }
+
+    // カードの更新
+    if (result === "win" || result === "lose" || (drawCount >= 2 && result === "draw")) {
+      // プレイヤーがコンピュータのカードを獲得
+      const newPlayerChoices = [...playerChoices];
+      newPlayerChoices[playerIndex] = computerChoice;
+      dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
+      
+      // コンピュータの手を新しくシャッフル
+      const newComputerChoices = getRandomChoices(choices, 3, currentStage.winCount);
+      dispatch(setComputerChoices({ stageId, computerChoices: newComputerChoices }));
+    } else {
+      // 引き分けの場合はカードを交換
+      const newPlayerChoices = [...playerChoices];
+      const newComputerChoices = [...computerChoices];
+      
+      newPlayerChoices[playerIndex] = computerChoice;
+      newComputerChoices[randomComputerIndex] = playerChoice;
+      
+      dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
+      dispatch(setComputerChoices({ stageId, computerChoices: newComputerChoices }));
+    }
+
+    return {
+      playerChoice,
+      computerChoice,
+      result
+    };
+  }
+);
 
 const gameSlice = createSlice({
   name: "game",
@@ -44,6 +112,7 @@ const gameSlice = createSlice({
           winCount: DEFAULT_WIN_COUNT,
           computerChoices: DEFAULT_COMPUTER_CHOICES,
           playerChoices: DEFAULT_PLAYER_CHOICES,
+          drawCount: 0,
         };
       }
       state.stages[stageId].life = life;
@@ -56,6 +125,7 @@ const gameSlice = createSlice({
           winCount: DEFAULT_WIN_COUNT,
           computerChoices: DEFAULT_COMPUTER_CHOICES,
           playerChoices: DEFAULT_PLAYER_CHOICES,
+          drawCount: 0,
         };
       }
       state.stages[stageId].winCount += 1;
@@ -68,6 +138,7 @@ const gameSlice = createSlice({
           winCount: DEFAULT_WIN_COUNT,
           computerChoices: DEFAULT_COMPUTER_CHOICES,
           playerChoices: DEFAULT_PLAYER_CHOICES,
+          drawCount: 0,
         };
       }
       state.stages[stageId].life -= 1;
@@ -79,6 +150,7 @@ const gameSlice = createSlice({
         winCount: DEFAULT_WIN_COUNT,
         computerChoices: DEFAULT_COMPUTER_CHOICES,
         playerChoices: DEFAULT_PLAYER_CHOICES,
+        drawCount: 0,
       };
     },
     setComputerChoices(

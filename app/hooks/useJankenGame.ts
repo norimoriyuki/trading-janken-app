@@ -11,6 +11,8 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import getRandomChoices from "../lib/get_random_choices";
 import getResult from "../lib/get_result";
+import { handlePlayerMove } from "../stores/gameSlice";
+import { AppDispatch } from "../stores";
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const DEFAULT_DRAW_COUNT = 0;
@@ -50,7 +52,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot5_red.png"),
     require("@assets/robot6_purple.png"),
   ];
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const getRandomEnemyImage = () => {
     const randomImage =
@@ -65,44 +67,26 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   //   }
   // }, []);
 
-  const handlePlayerChoice = (playerIndex: number) => {
-    console.log("handlePlayerChoice", playerIndex);
-    const randomComputerIndex = Math.floor(
-      Math.random() * computerChoices.length
-    );
-    const playerChoice = playerChoices[playerIndex];
-    const computerChoice = computerChoices[randomComputerIndex];
-    const result = getResult(playerChoice, computerChoice);
-    updatePlayerScore(result);
-    updatePlayerAndComputerChoices(result, playerIndex, randomComputerIndex);
-    // updateGameSceneState();
+  const handlePlayerChoice = async (playerIndex: number) => {
+    try {
+      const result = await dispatch(handlePlayerMove({ playerIndex, stageId })).unwrap();
+      
+      // 結果表示の更新
+      setShowResult({
+        playerChoice: result.playerChoice,
+        computerChoice: result.computerChoice,
+        result: result.result
+      });
 
-    // const updatedPlayerChoices = [...playerChoices];
-    // const updatedComputerChoices = [...computerChoices];
-
-    // updatedPlayerChoices[playerIndex] = computerChoice;
-    // updatedComputerChoices[randomComputerIndex] = playerChoice;
-    // console.log("updatedComputerChoices", updatedComputerChoices);
-    // console.log("updatedPlayerChoices", updatedPlayerChoices);
-    // console.log("result", result);
-    // console.log("playerIndex", playerIndex);
-
-    // setPlayerChoices({ stageId, playerChoices: updatedPlayerChoices });
-    // setComputerChoices({ stageId, computerChoices: updatedComputerChoices });
-
-    // if (result === "win") {
-    //   console.log("incrementWinCount");
-    //   dispatch(incrementWinCount({ stageId }));
-    //   setDrawCount(0);
-    // } else if (result === "lose") {
-    //   console.log("decrementLife");
-    //   dispatch(decrementLife({ stageId }));
-    //   setDrawCount(0);
-    // } else {
-    //   setDrawCount(drawCount + 1);
-    // }
-
-    setShowResult({ playerChoice, computerChoice, result });
+      // ドロー回数の更新
+      if (result.result === "draw") {
+        setDrawCount(prev => prev + 1);
+      } else {
+        setDrawCount(0);
+      }
+    } catch (error) {
+      console.error("Failed to handle player move:", error);
+    }
   };
 
   const resetGame = () => {
