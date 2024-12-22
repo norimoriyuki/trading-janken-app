@@ -4,7 +4,7 @@ import { RootState } from "../stores";
 import { incrementWinCount, decrementLife, resetLifeAndWinCount } from "../stores/gameSlice";
 import { useDispatch, useSelector } from "react-redux";
 
-export const useJankenGame = (onBackClick: () => void) => {
+export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const DEFAULT_DRAW_COUNT = 0;
   const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
   const [playerChoices, setPlayerChoices] = useState<ChoiceType[]>([]);
@@ -14,8 +14,8 @@ export const useJankenGame = (onBackClick: () => void) => {
     computerChoice: ChoiceType;
     result: string;
   } | null>(null);
-  const life = useSelector((state: RootState) => state.game.life);
-  const winCount = useSelector((state: RootState) => state.game.winCount);
+  const life = useSelector((state: RootState) => state.game.stages[stageId]?.life);
+  const winCount = useSelector((state: RootState) => state.game.stages[stageId]?.winCount);
   const [drawCount, setDrawCount] = useState<number>(DEFAULT_DRAW_COUNT);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
@@ -129,11 +129,11 @@ export const useJankenGame = (onBackClick: () => void) => {
 
     if (result === "win") {
       console.log("incrementWinCount");
-      dispatch(incrementWinCount());
+      dispatch(incrementWinCount({ stageId }));
       setDrawCount(0);
     } else if (result === "lose") {
       console.log("decrementLife");
-      dispatch(decrementLife());
+      dispatch(decrementLife({ stageId }));
       setDrawCount(0);
     } else {
       setDrawCount(drawCount + 1);
@@ -145,7 +145,7 @@ export const useJankenGame = (onBackClick: () => void) => {
   const resetGame = () => {
     setPlayerChoices(playerChoices);
     setComputerChoices(getRandomChoices(choices, 3, winCount));
-    resetLifeAndWinCount();
+    resetLifeAndWinCount({ stageId });
     setDrawCount(0);
     getRandomEnemyImage();
   };

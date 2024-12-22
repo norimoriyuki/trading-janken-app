@@ -2,11 +2,16 @@ import React from 'react';
 import JankenGameScreen from '../screens/JankenGame';
 import { Provider } from "react-redux";
 import store from "./stores";
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 const JankenGame = () => {
+  const navigation = useNavigation();
+  const route = useRoute();
+  const { stageId } = (route.params as { stageId: string });
+
   return (
     <Provider store={store}>
-      <JankenGameScreen onBackClick={() => {}} playerChoices={[]} />
+      <JankenGameScreen onBackClick={() => navigation.goBack()} playerChoices={[]} stageId={stageId} />
     </Provider>
   );
 };

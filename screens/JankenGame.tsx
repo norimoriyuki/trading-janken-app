@@ -18,8 +18,10 @@ import CardDetailWindow from "../components/CardDetailWindow";
 
 export default function JankenGame({
   onBackClick,
+  stageId,
 }: {
   onBackClick: () => void;
+  stageId: string;
   playerChoices: ChoiceType[];
 }) {
   const {
@@ -34,7 +36,7 @@ export default function JankenGame({
     resetGame,
     closeScoreWindow,
     closeResult,
-  } = useJankenGame(onBackClick);
+  } = useJankenGame(onBackClick, stageId);
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
   const [showCardDetail, setShowCardDetail] = useState(false);
