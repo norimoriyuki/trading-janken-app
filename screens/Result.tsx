@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../app/stores";
 
 export default function ResultScreen() {
-    const winCount = useSelector((state: RootState) => state.game.winCount);
+  const winCount = useSelector((state: RootState) => state.game.stages["stage1"]?.winCount);
 
   return (
     <View style={styles.container}>
