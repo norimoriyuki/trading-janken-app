@@ -18,8 +18,10 @@ import CardDetailWindow from "../components/CardDetailWindow";
 
 export default function JankenGame({
   onBackClick,
+  stageId,
 }: {
   onBackClick: () => void;
+  stageId: string;
   playerChoices: ChoiceType[];
 }) {
   const {
@@ -30,11 +32,12 @@ export default function JankenGame({
     life,
     winCount,
     enemyImage,
+    drawCount,
     handlePlayerChoice,
     resetGame,
     closeScoreWindow,
     closeResult,
-  } = useJankenGame(onBackClick);
+  } = useJankenGame(onBackClick, stageId);
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
   const [showCardDetail, setShowCardDetail] = useState(false);
@@ -100,6 +103,7 @@ export default function JankenGame({
       <View style={styles.playerContainer}>
         <Text style={styles.playerText}>ライフ: {life}</Text>
         <Text style={styles.playerText}>勝利数: {winCount}</Text>
+        <Text style={styles.playerText}>引き分け: {drawCount}</Text>
       </View>
 
       {/* Result Modal */}

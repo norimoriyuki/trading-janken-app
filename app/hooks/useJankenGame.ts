@@ -1,21 +1,44 @@
 import { useState, useEffect } from "react";
 import { ChoiceType, choices } from "@/app/types/models";
 import { RootState } from "../stores";
-import { incrementWinCount, decrementLife, resetLifeAndWinCount } from "../stores/gameSlice";
+import {
+  incrementWinCount,
+  decrementLife,
+  resetLifeAndWinCount,
+  setComputerChoices,
+  setPlayerChoices,
+} from "../stores/gameSlice";
 import { useDispatch, useSelector } from "react-redux";
+import getRandomChoices from "../lib/get_random_choices";
+import getResult from "../lib/get_result";
+import { handlePlayerMove } from "../stores/gameSlice";
+import { AppDispatch } from "../stores";
 
-export const useJankenGame = (onBackClick: () => void) => {
+export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const DEFAULT_DRAW_COUNT = 0;
-  const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
-  const [playerChoices, setPlayerChoices] = useState<ChoiceType[]>([]);
+  // const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
+  // const [playerChoices, setPlayerChoices] = useState<ChoiceType[]>([]);
+  const [gameSceneState, setGameSceneState] = useState<
+    "choosing" | "janken_result" | "game_result"
+  >("choosing");
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
   const [showResult, setShowResult] = useState<{
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
     result: string;
   } | null>(null);
-  const life = useSelector((state: RootState) => state.game.life);
-  const winCount = useSelector((state: RootState) => state.game.winCount);
+  const life = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.life
+  );
+  const winCount = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.winCount
+  );
+  const computerChoices = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.computerChoices
+  );
+  const playerChoices = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.playerChoices
+  );
   const [drawCount, setDrawCount] = useState<number>(DEFAULT_DRAW_COUNT);
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
@@ -29,73 +52,7 @@ export const useJankenGame = (onBackClick: () => void) => {
     require("@assets/robot5_red.png"),
     require("@assets/robot6_purple.png"),
   ];
-  const dispatch = useDispatch();
-
-  // ゲーム結果の判定
-  const getResult = (
-    player: ChoiceType,
-    computer: ChoiceType
-  ): "win" | "lose" | "draw" => {
-    if (
-      player.name === computer.name ||
-      player.name === "バリアー" ||
-      computer.name === "バリアー"
-    )
-      return "draw";
-    if (
-      (player.type === "rock" && computer.type === "scissors") ||
-      (player.type === "scissors" && computer.type === "paper") ||
-      (player.type === "paper" && computer.type === "rock")
-    ) {
-      return "win";
-    }
-    if (player.level > computer.level && player.type === computer.type) {
-      return "win";
-    }
-    return "lose";
-  };
-
-  const getRandomChoices = (
-    array: ChoiceType[],
-    count: number,
-    winCount: number
-  ): ChoiceType[] => {
-    const otherWeight = 100;
-    const midWeight = Math.min(150, Math.max(30 * (winCount - 2), 0));
-    const bigWeight = Math.min(200, Math.max(0, 60 * (winCount - 10)));
-    const barrierWeight = Math.max(
-      15,
-      Math.min(otherWeight, midWeight, bigWeight)
-    );
-
-    const weightedArray = [
-      ...Array(otherWeight).fill(
-        array.find((choice) => choice.name === "グー")
-      ),
-      ...Array(otherWeight).fill(
-        array.find((choice) => choice.name === "チョキ")
-      ),
-      ...Array(otherWeight).fill(
-        array.find((choice) => choice.name === "パー")
-      ),
-      ...Array(barrierWeight).fill(
-        array.find((choice) => choice.name === "バリアー")
-      ),
-      ...Array(bigWeight).fill(array.find((choice) => choice.name === "村正")),
-      ...Array(bigWeight).fill(array.find((choice) => choice.name === "隕石")),
-      ...Array(bigWeight).fill(array.find((choice) => choice.name === "愛")),
-      ...Array(midWeight).fill(
-        array.find((choice) => choice.name === "ザリガニ")
-      ),
-      ...Array(midWeight).fill(
-        array.find((choice) => choice.name === "金の玉")
-      ),
-      ...Array(midWeight).fill(array.find((choice) => choice.name === "札")),
-    ].filter(Boolean) as ChoiceType[];
-
-    const shuffled = weightedArray.sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, count);
-  };
+  const dispatch = useDispatch<AppDispatch>();
 
   const getRandomEnemyImage = () => {
     const randomImage =
@@ -103,49 +60,42 @@ export const useJankenGame = (onBackClick: () => void) => {
     setEnemyImage(randomImage);
   };
 
-  useEffect(() => {
-    if (computerChoices.length === 0) {
-      setComputerChoices(getRandomChoices(choices, 3, winCount));
-      setPlayerChoices(getRandomChoices(choices, 3, winCount));
+  // useEffect(() => {
+  //   if (computerChoices.length === 0) {
+  //     setComputerChoices({stageId, computerChoices: getRandomChoices(choices, 3, winCount)});
+  //     setPlayerChoices({stageId, playerChoices: getRandomChoices(choices, 3, winCount)});
+  //   }
+  // }, []);
+
+  const handlePlayerChoice = async (playerIndex: number) => {
+    try {
+      const result = await dispatch(handlePlayerMove({ playerIndex, stageId })).unwrap();
+      
+      // 結果表示の更新
+      setShowResult({
+        playerChoice: result.playerChoice,
+        computerChoice: result.computerChoice,
+        result: result.result
+      });
+
+      // ドロー回数の更新
+      if (result.result === "draw") {
+        setDrawCount(prev => prev + 1);
+      } else {
+        setDrawCount(0);
+      }
+    } catch (error) {
+      console.error("Failed to handle player move:", error);
     }
-  }, []);
-
-  const handlePlayerChoice = (playerIndex: number) => {
-    const randomComputerIndex = Math.floor(
-      Math.random() * computerChoices.length
-    );
-    const playerChoice = playerChoices[playerIndex];
-    const computerChoice = computerChoices[randomComputerIndex];
-    const result = getResult(playerChoice, computerChoice);
-
-    const updatedPlayerChoices = [...playerChoices];
-    const updatedComputerChoices = [...computerChoices];
-
-    updatedPlayerChoices[playerIndex] = computerChoice;
-    updatedComputerChoices[randomComputerIndex] = playerChoice;
-
-    setPlayerChoices(updatedPlayerChoices);
-    setComputerChoices(updatedComputerChoices);
-
-    if (result === "win") {
-      console.log("incrementWinCount");
-      dispatch(incrementWinCount());
-      setDrawCount(0);
-    } else if (result === "lose") {
-      console.log("decrementLife");
-      dispatch(decrementLife());
-      setDrawCount(0);
-    } else {
-      setDrawCount(drawCount + 1);
-    }
-
-    setShowResult({ playerChoice, computerChoice, result });
   };
 
   const resetGame = () => {
-    setPlayerChoices(playerChoices);
-    setComputerChoices(getRandomChoices(choices, 3, winCount));
-    resetLifeAndWinCount();
+    dispatch(setPlayerChoices({ stageId, playerChoices: playerChoices }));
+    setComputerChoices({
+      stageId,
+      computerChoices: getRandomChoices(choices, 3, winCount),
+    });
+    resetLifeAndWinCount({ stageId });
     setDrawCount(0);
     getRandomEnemyImage();
   };
@@ -164,12 +114,15 @@ export const useJankenGame = (onBackClick: () => void) => {
     if (drawCount === 0) {
       getRandomEnemyImage();
       // setIsEnemyImageAnimating(true);
-      setIsShuffling(true);
-      setTimeout(() => {
-        setComputerChoices(getRandomChoices(choices, 3, winCount));
-        setTimeout(() => setIsShuffling(false), 600);
-        //   setTimeout(() => setIsEnemyImageAnimating(false), 600);
-      }, 100);
+      // setIsShuffling(true);
+      // setTimeout(() => {
+      //   setComputerChoices({
+      //     stageId,
+      //     computerChoices: getRandomChoices(choices, 3, winCount),
+      //   });
+      //   setTimeout(() => setIsShuffling(false), 600);
+      //   //   setTimeout(() => setIsEnemyImageAnimating(false), 600);
+      // }, 100);
     }
 
     if (life <= 0) {
@@ -181,6 +134,91 @@ export const useJankenGame = (onBackClick: () => void) => {
     //   }
   };
 
+  const updateGameSceneState = () => {
+    console.log("ゲームシーンの状態を更新します。現在の状態:", gameSceneState);
+    if (gameSceneState === "choosing") {
+      setGameSceneState("janken_result");
+    }
+    if (gameSceneState === "janken_result") {
+      if (life === 0) {
+        setGameSceneState("game_result");
+      } else {
+        setGameSceneState("choosing");
+      }
+    }
+    console.log("更新後のゲームシーンの状態:", gameSceneState);
+  };
+
+  const updatePlayerScore = (result: "win" | "lose" | "draw") => {
+    console.log("プレイヤーのスコアを更新します。結果:", result);
+    if (result === "win") {
+      dispatch(incrementWinCount({ stageId }));
+    } else if (result === "lose") {
+      dispatch(decrementLife({ stageId }));
+    }
+  }
+
+  const updatePlayerAndComputerChoices = (
+    result: "win" | "lose" | "draw",
+    playerIndex: number,
+    computerIndex: number
+  ) => {
+    console.log("プレイヤーとコンピュータの選択を更新します。結果:", result, "プレイヤーのインデックス:", playerIndex, "コンピュータのインデックス:", computerIndex);
+    if (result === "win" || (drawCount >= 2 && result === "draw")) {
+      getComputerCard(playerIndex, computerIndex);
+      shuffleComputerChoices();
+      setDrawCount(0);
+      console.log("更新後のドロー回数win:", 0);
+    } else if (result === "lose") {
+      getComputerCard(playerIndex, computerIndex);
+      shuffleComputerChoices();
+      setDrawCount(0);
+      console.log("更新後のドロー回数 lose:", 0);
+    } else {
+      setDrawCount(prevDrawCount => prevDrawCount + 1);
+      exchangePlayerAndComputerCard(playerIndex, computerIndex);
+      console.log("更新後のドロー回数 draw:", drawCount + 1);
+    }
+  };
+
+  const getComputerCard = (playerIndex: number, computerIndex: number) => {
+    const newPlayerChoices = [...playerChoices];
+    newPlayerChoices[playerIndex] = computerChoices[computerIndex];
+    dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
+  }
+
+  const exchangePlayerAndComputerCard = (
+    playerIndex: number,
+    computerIndex: number
+  ) => {
+    console.log("プレイヤーとコンピュータのカードを交換します。プレイヤーのインデックス:", playerIndex, "コンピュータのインデックス:", computerIndex);
+    const playerChoice = playerChoices[playerIndex];
+    const computerChoice = computerChoices[computerIndex];
+
+    const updatedPlayerChoices = [...playerChoices];
+    const updatedComputerChoices = [...computerChoices];
+
+    updatedPlayerChoices[playerIndex] = computerChoice;
+    updatedComputerChoices[computerIndex] = playerChoice;
+
+    dispatch(setPlayerChoices({ stageId, playerChoices: updatedPlayerChoices }));
+    dispatch(setComputerChoices({ stageId, computerChoices: updatedComputerChoices }));
+    console.log("更新後のプレイヤーの選択:", updatedPlayerChoices);
+    console.log("更新後のコンピュータの選択:", updatedComputerChoices);
+  };
+
+  const shuffleComputerChoices = () => {
+    console.log("コンピュータの選択をシャッフルします。");
+    console.log("シャッフル前のコンピュータの選択:", computerChoices);
+    const newComputerChoices = getRandomChoices(choices, 3, winCount);
+    console.log("シャッフル後のコンピュータの選択:", newComputerChoices);
+    dispatch(setComputerChoices({
+      stageId,
+      computerChoices: newComputerChoices,
+    }));
+    console.log("シャッフル後のコンピュータの選択:", computerChoices);
+  };
+
   return {
     computerChoices,
     playerChoices,
@@ -190,9 +228,10 @@ export const useJankenGame = (onBackClick: () => void) => {
     winCount,
     isShuffling,
     enemyImage,
+    drawCount,
     handlePlayerChoice,
     resetGame,
     closeScoreWindow,
-    closeResult
+    closeResult,
   };
 };

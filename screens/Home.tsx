@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { stages } from '../app/types/stages';
 
+const resultStage = { id: 'result', name: '結果画面' };
 
 export default function HomeScreen() {
-const router = useRouter();
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
@@ -15,26 +17,21 @@ const router = useRouter();
 
       {/* Stage List */}
       <ScrollView style={styles.stageList}>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 1</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 2</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 3</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 4</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 5</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/jankengame')}>
-            <Text style={styles.stageText}>Stage 6</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.stageItem} onPress={() => router.push('/result')}>
-            <Text style={styles.stageText}>結果画面</Text>
+        {stages.map(stage => (
+          <TouchableOpacity
+            key={stage.id}
+            style={styles.stageItem}
+            onPress={() => router.push(`/jankengame?stageId=${stage.id}`)}
+          >
+            <Text style={styles.stageText}>{stage.name}</Text>
+          </TouchableOpacity>
+        ))}
+        <TouchableOpacity
+          key={resultStage.id}
+          style={styles.stageItem}
+          onPress={() => router.push(`/jankengame?stageId=${resultStage.id}`)}
+        >
+          <Text style={styles.stageText}>{resultStage.name}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
