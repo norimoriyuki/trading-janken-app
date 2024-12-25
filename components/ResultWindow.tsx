@@ -27,20 +27,18 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
   if (!showResult) return null;
 
   return (
-    <TouchableWithoutFeedback onPress={closeResult}>
-      <View style={styles.overlay}>
-        <View style={styles.resultWindow}>
-          <View style={styles.resultContainer}>
-            {/* Computer's choice */}
-            <View style={styles.choice}>
-              <JankenCard
-                choice={showResult.computerChoice}
-                onSwipeUp={() => {}}
-                onCardPress={() => {}}
-              />
-            </View>
-          </View>
+    <View style={styles.resultContainer}>
+      <View style={styles.horizontalLayout}>
+        <View style={styles.cardSection}>
+          <JankenCard
+            choice={showResult.computerChoice}
+            onSwipeUp={() => {}}
+            onCardPress={() => {}}
+            showResult={null}
+          />
+        </View>
 
+        <View style={styles.resultSection}>
           <Text style={styles.resultText}>
             {showResult.result === 'win'
               ? 'WIN'
@@ -48,7 +46,6 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
               ? 'LOSE'
               : `あいこ${drawCount > 0 ? `（${drawCount}/3）` : '3/3'}`}
           </Text>
-
           <View style={styles.resultIcon}>
             {((showResult.result === 'win') ||
               (showResult.result === 'reset')) && (
@@ -64,44 +61,45 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
               </View>
             )}
           </View>
+        </View>
 
-          <View style={styles.choice}>
-            <JankenCard
-              choice={showResult.playerChoice}
-              onSwipeUp={() => {}}
-              onCardPress={() => {}}
-            />
-          </View>
+        <View style={styles.cardSection}>
+          <JankenCard
+            choice={showResult.playerChoice}
+            onSwipeUp={() => {}}
+            onCardPress={() => {}}
+            showResult={null}
+          />
         </View>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  resultContainer: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  resultWindow: {
-    backgroundColor: '#d3d3d3',
-    padding: 20,
-    borderRadius: 10,
-    width: Dimensions.get('window').width * 0.8,
+  horizontalLayout: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
+    height: '100%',
   },
-  resultContainer: {
-    width: '100%',
+  cardSection: {
+    width: '30%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  choice: {
-    marginVertical: 10,
+  resultSection: {
+    width: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
   },
   resultText: {
     fontSize: 24,

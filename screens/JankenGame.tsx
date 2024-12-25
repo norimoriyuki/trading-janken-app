@@ -1,12 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   Button,
   Image,
   StyleSheet,
-  Modal,
-  ScrollView
+  Pressable,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
 import ResultWindow from "../components/ResultWindow";
@@ -14,7 +13,6 @@ import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import { ChoiceType } from "../app/types/models";
 import CardDetailWindow from "../components/CardDetailWindow";
-
 
 export default function JankenGame({
   onBackClick,
@@ -43,18 +41,24 @@ export default function JankenGame({
   const [showCardDetail, setShowCardDetail] = useState(false);
 
   const handleCardPress = (choice: ChoiceType) => {
-    console.log("handleCardPress", choice);
+    //console.log("handleCardPress", choice);
     setSelectedCard(choice);
     setShowCardDetail(true);
+  };
+
+  const handleSwipeUp = async (index: number) => {
+    await handlePlayerChoice(index);
   };
 
   const closeCardDetail = () => {
     setShowCardDetail(false);
     setSelectedCard(null);
   };
-
   return (
-    <View style={styles.container}>
+    <Pressable 
+      style={styles.container}
+      onPress={() => showResult && closeResult()}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Button title="降参" onPress={resetGame} />
@@ -72,31 +76,49 @@ export default function JankenGame({
         />
       </View>
 
-      {/* Computer Cards */}
-      <View style={styles.cardContainer}>
-        <Text style={styles.enemyText}>相手の手</Text>
-        {(computerChoices || []).map((choice, index) => (
-          <JankenCard
-            key={index}
-            choice={choice}
-            onSwipeUp={() => {}}
-            onCardPress={() => handleCardPress(choice)}
-          />
-        ))}
-      </View>
+      {/* Game Area */}
+      <View style={styles.gameArea}>
+        {/* Computer Cards */}
+        <View style={styles.cardContainer}>
+          <Text style={styles.enemyText}>相手の手</Text>
+          {(computerChoices || []).map((choice, index) => (
+            <JankenCard
+              key={index}
+              choice={choice}
+              onSwipeUp={() => {}}
+              onCardPress={() => !showResult && handleCardPress(choice)}
+              showResult={showResult}
+            />
+          ))}
+        </View>
 
-      {/* Player Cards */}
-      <View style={styles.cardContainer}>
-        <Text style={styles.enemyText}>あなたの手</Text>
-        {(playerChoices || []).map((choice, index) => (
-          <JankenCard
-            key={index}
-            choice={choice}
-            onSwipeUp={() => handlePlayerChoice(index)}
-            onCardPress={() => handleCardPress(choice)}
-            isPlayerHand
-          />
-        ))}
+        {/* Play Area */}
+        <View style={styles.playArea}>
+          {showResult ? (
+            <ResultWindow
+              showResult={showResult}
+              closeResult={closeResult}
+              drawCount={drawCount}
+            />
+          ) : (
+            <View style={styles.playAreaPlaceholder} />
+          )}
+        </View>
+
+        {/* Player Cards */}
+        <View style={styles.cardContainer}>
+          <Text style={styles.enemyText}>あなたの手</Text>
+          {(playerChoices || []).map((choice, index) => (
+            <JankenCard
+              key={index}
+              choice={choice}
+              onSwipeUp={() => handleSwipeUp(index)}
+              onCardPress={() => handleCardPress(choice)}
+              isPlayerHand
+              showResult={showResult}
+            />
+          ))}
+        </View>
       </View>
 
       {/* Player Info */}
@@ -105,17 +127,6 @@ export default function JankenGame({
         <Text style={styles.playerText}>勝利数: {winCount}</Text>
         <Text style={styles.playerText}>引き分け: {drawCount}</Text>
       </View>
-
-      {/* Result Modal */}
-      {showResult && (
-        <Modal transparent>
-          <ResultWindow
-            showResult={showResult}
-            closeResult={closeResult}
-            drawCount={0}
-          />
-        </Modal>
-      )}
 
       {showScoreWindow && (
         <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
@@ -128,7 +139,7 @@ export default function JankenGame({
           onClose={closeCardDetail}
         />
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -166,6 +177,8 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   cardContainer: {
+    height: '30%', 
+    alignItems: 'center',
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
@@ -196,20 +209,8 @@ const styles = StyleSheet.create({
   lifeContainer: {
     margin: -5,
   },
-  heart: {
-    // Add styles for heart if needed
-  },
-  heartAnimate: {
-    // Add styles for heart animation if needed
-  },
   winContainer: {
     margin: -5,
-  },
-  star: {
-    // Add styles for star if needed
-  },
-  instructionText: {
-    // Add styles for instruction text if needed
   },
   modalOverlay: {
     flex: 1,
@@ -223,5 +224,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     maxWidth: "80%",
     textAlign: "center",
+  },
+  gameArea: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  playArea: {
+    height: '40%', // 固定の高さを確保
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  playAreaPlaceholder: {
+    width: '100%',
+    height: '100%',
   },
 });
