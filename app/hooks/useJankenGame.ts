@@ -13,6 +13,14 @@ import getRandomChoices from "../lib/get_random_choices";
 import { handlePlayerMove } from "../stores/gameSlice";
 import { AppDispatch } from "../stores";
 
+type ShowResultType = {
+  playerChoice: ChoiceType;
+  computerChoice: ChoiceType;
+  playerIndex: number;
+  computerIndex: number;
+  result: string;
+} | null;
+
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const DEFAULT_DRAW_COUNT = 0;
   // const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
@@ -21,11 +29,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     "choosing" | "janken_result" | "game_result"
   >("choosing");
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
-  const [showResult, setShowResult] = useState<{
-    playerChoice: ChoiceType;
-    computerChoice: ChoiceType;
-    result: string;
-  } | null>(null);
+  const [showResult, setShowResult] = useState<ShowResultType>(null);
   const life = useSelector(
     (state: RootState) => state.game.stages[stageId]?.life
   );
@@ -78,12 +82,17 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       console.log("Dispatching handlePlayerMove");
       const result = await dispatch(handlePlayerMove({ playerIndex, stageId })).unwrap();
       
+      // ランダムな相手のカードのインデックスを選択
+      const computerIndex = Math.floor(Math.random() * computerChoices.length);
+      
       await Promise.all([
         new Promise(resolve => {
           console.log("Setting showResult with:", result);
           setShowResult({
-            playerChoice: result.playerChoice,
-            computerChoice: result.computerChoice,
+            playerChoice: playerChoices[playerIndex],
+            computerChoice: computerChoices[computerIndex],
+            playerIndex,
+            computerIndex,
             result: result.result
           });
           resolve(true);

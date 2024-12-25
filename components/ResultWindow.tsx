@@ -1,10 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableWithoutFeedback,
   StyleSheet,
-  Dimensions,
+  Animated,
 } from 'react-native';
 import JankenCard from './JankenCard';
 import { ChoiceType } from '@/app/types/models';
@@ -24,19 +23,59 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
   drawCount,
   closeResult,
 }) => {
+  const playerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: 200 })).current;
+  const computerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: -200 })).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (showResult) {
+      // アニメーションの初期値をリセット
+      playerCardAnim.setValue({ x: 0, y: 200 });
+      computerCardAnim.setValue({ x: 0, y: -200 });
+      opacityAnim.setValue(0);
+
+      // カードの移動アニメーションと透明度のアニメーションを同時に実行
+      Animated.parallel([
+        Animated.timing(playerCardAnim, {
+          toValue: { x: 0, y: 0 },
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(computerCardAnim, {
+          toValue: { x: 0, y: 0 },
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showResult]);
+
   if (!showResult) return null;
 
   return (
     <View style={styles.resultContainer}>
       <View style={styles.horizontalLayout}>
-        <View style={styles.cardSection}>
+        <Animated.View 
+          style={[
+            styles.cardSection,
+            {
+              transform: computerCardAnim.getTranslateTransform(),
+              opacity: opacityAnim,
+            }
+          ]}
+        >
           <JankenCard
             choice={showResult.computerChoice}
             onSwipeUp={() => {}}
             onCardPress={() => {}}
             showResult={null}
           />
-        </View>
+        </Animated.View>
 
         <View style={styles.resultSection}>
           <Text style={styles.resultText}>
@@ -63,14 +102,22 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
           </View>
         </View>
 
-        <View style={styles.cardSection}>
+        <Animated.View 
+          style={[
+            styles.cardSection,
+            {
+              transform: playerCardAnim.getTranslateTransform(),
+              opacity: opacityAnim,
+            }
+          ]}
+        >
           <JankenCard
             choice={showResult.playerChoice}
             onSwipeUp={() => {}}
             onCardPress={() => {}}
             showResult={null}
           />
-        </View>
+        </Animated.View>
       </View>
     </View>
   );

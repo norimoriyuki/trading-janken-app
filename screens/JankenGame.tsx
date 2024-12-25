@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -82,13 +82,19 @@ export default function JankenGame({
         <View style={styles.cardContainer}>
           <Text style={styles.enemyText}>相手の手</Text>
           {(computerChoices || []).map((choice, index) => (
-            <JankenCard
-              key={index}
-              choice={choice}
-              onSwipeUp={() => {}}
-              onCardPress={() => !showResult && handleCardPress(choice)}
-              showResult={showResult}
-            />
+            <View 
+              key={index} 
+              style={{ 
+                opacity: (showResult && showResult.computerIndex === index) ? 0 : 1 
+              }}
+            >
+              <JankenCard
+                choice={choice}
+                onSwipeUp={() => {}}
+                onCardPress={() => !showResult && handleCardPress(choice)}
+                showResult={showResult}
+              />
+            </View>
           ))}
         </View>
 
@@ -109,14 +115,20 @@ export default function JankenGame({
         <View style={styles.cardContainer}>
           <Text style={styles.enemyText}>あなたの手</Text>
           {(playerChoices || []).map((choice, index) => (
-            <JankenCard
-              key={index}
-              choice={choice}
-              onSwipeUp={() => handleSwipeUp(index)}
-              onCardPress={() => handleCardPress(choice)}
-              isPlayerHand
-              showResult={showResult}
-            />
+            <View 
+              key={index} 
+              style={{ 
+                opacity: (showResult && showResult.playerIndex === index) ? 0 : 1 
+              }}
+            >
+              <JankenCard
+                choice={choice}
+                onSwipeUp={() => handleSwipeUp(index)}
+                onCardPress={() => handleCardPress(choice)}
+                isPlayerHand
+                showResult={showResult}
+              />
+            </View>
           ))}
         </View>
       </View>
