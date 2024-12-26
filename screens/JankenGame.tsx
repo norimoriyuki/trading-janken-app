@@ -80,7 +80,6 @@ export default function JankenGame({
       <View style={styles.gameArea}>
         {/* Computer Cards */}
         <View style={styles.cardContainer}>
-          <Text style={styles.enemyText}>相手の手</Text>
           {(computerChoices || []).map((choice, index) => (
             <View 
               key={index} 
@@ -113,7 +112,6 @@ export default function JankenGame({
 
         {/* Player Cards */}
         <View style={styles.cardContainer}>
-          <Text style={styles.enemyText}>あなたの手</Text>
           {(playerChoices || []).map((choice, index) => (
             <View 
               key={index} 

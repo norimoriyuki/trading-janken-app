@@ -41,6 +41,7 @@ export const handlePlayerMove = createAsyncThunk<
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
     result: "win" | "lose" | "draw";
+    computerIndex: number;
   },
   { 
     playerIndex: number; 
@@ -59,9 +60,9 @@ export const handlePlayerMove = createAsyncThunk<
     const { playerChoices, computerChoices, drawCount } = currentStage;
     const randomComputerIndex = Math.floor(Math.random() * computerChoices.length);
     
-    const playerChoice = playerChoices[playerIndex];
-    const computerChoice = computerChoices[randomComputerIndex];
-    const result = getResult(playerChoice, computerChoice);
+    const originalPlayerChoice = playerChoices[playerIndex];
+    const originalComputerChoice = computerChoices[randomComputerIndex];
+    const result = getResult(originalPlayerChoice, originalComputerChoice);
 
     // スコアの更新
     if (result === "win") {
@@ -74,7 +75,7 @@ export const handlePlayerMove = createAsyncThunk<
     if (result === "win" || result === "lose" || (drawCount >= 2 && result === "draw")) {
       // プレイヤーがコンピュータのカードを獲得
       const newPlayerChoices = [...playerChoices];
-      newPlayerChoices[playerIndex] = computerChoice;
+      newPlayerChoices[playerIndex] = originalComputerChoice;
       dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
       
       // コンピュータの手を新しくシャッフル
@@ -85,17 +86,18 @@ export const handlePlayerMove = createAsyncThunk<
       const newPlayerChoices = [...playerChoices];
       const newComputerChoices = [...computerChoices];
       
-      newPlayerChoices[playerIndex] = computerChoice;
-      newComputerChoices[randomComputerIndex] = playerChoice;
+      newPlayerChoices[playerIndex] = originalComputerChoice;
+      newComputerChoices[randomComputerIndex] = originalPlayerChoice;
       
       dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
       dispatch(setComputerChoices({ stageId, computerChoices: newComputerChoices }));
     }
 
     return {
-      playerChoice,
-      computerChoice,
-      result
+      playerChoice: originalPlayerChoice,
+      computerChoice: originalComputerChoice,
+      result,
+      computerIndex: randomComputerIndex
     };
   }
 );
