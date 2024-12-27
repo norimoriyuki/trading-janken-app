@@ -39,7 +39,7 @@ export default function JankenGame({
   } = useJankenGame(onBackClick, stageId);
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
-  const [showCardDetail, setShowCardDetail] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
   const [cardPositions, setCardPositions] = useState<{ [key: number]: { x: number; y: number }}>({});
 
   const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
@@ -91,24 +91,23 @@ export default function JankenGame({
   }, [playerChoices]);
 
   const handleCardPress = (choice: ChoiceType) => {
-    //console.log("handleCardPress", choice);
-    setSelectedCard(choice);
-    setShowCardDetail(true);
+    if (!showResult) {  // リザルト表示中は詳細を表示しない
+      setSelectedCard(choice);
+      setShowDetail(true);
+    }
   };
 
   const handleSwipeUp = async (index: number) => {
     await handlePlayerChoice(index);
-  };
-
-  const closeCardDetail = () => {
-    setShowCardDetail(false);
+    setShowDetail(false);
     setSelectedCard(null);
   };
 
-  const handleResultAnimationComplete = () => {
-    // ここでカードの交換ロジックを実行
-    console.log('カード交換アニメーション完了');
+  const closeCardDetail = () => {
+    setShowDetail(false);
+    setSelectedCard(null);
   };
+
 
   return (
     <Pressable 
@@ -155,13 +154,18 @@ export default function JankenGame({
 
         {/* Play Area */}
         <View style={styles.playArea}>
-          {showResult && (
+          {showResult ? (
             <ResultWindow
               showResult={showResult}
               closeResult={closeResult}
               drawCount={drawCount}
               startPosition={cardPositions[showResult.playerIndex]}
-              onAnimationComplete={handleResultAnimationComplete}
+            />
+          ) :
+          showDetail && selectedCard && (
+            <CardDetailWindow
+              choice={selectedCard}
+              onClose={closeCardDetail}
             />
           )}
         </View>
@@ -199,14 +203,6 @@ export default function JankenGame({
 
       {showScoreWindow && (
         <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
-      )}
-
-      {/* Card Detail Modal */}
-      {showCardDetail && selectedCard && (
-        <CardDetailWindow
-          choice={selectedCard}
-          onClose={closeCardDetail}
-        />
       )}
     </Pressable>
   );
