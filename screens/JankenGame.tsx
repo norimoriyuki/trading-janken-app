@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Image,
   StyleSheet,
   Pressable,
+  Platform,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
 import ResultWindow from "../components/ResultWindow";
@@ -39,6 +40,55 @@ export default function JankenGame({
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
   const [showCardDetail, setShowCardDetail] = useState(false);
+  const [cardPositions, setCardPositions] = useState<{ [key: number]: { x: number; y: number }}>({});
+
+  const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
+
+  const updateCardPosition = (index: number) => {
+    if (cardRefs.current[index]) {
+      if (isWeb) {
+        const rect = (cardRefs.current[index] as HTMLDivElement)?.getBoundingClientRect();
+        if (rect) {
+          setCardPositions(prev => ({
+            ...prev,
+            [index]: { 
+              x: rect.x - window.innerWidth / 2,
+              y: rect.y - window.innerHeight / 2
+            }
+          }));
+        }
+      } else {
+        (cardRefs.current[index] as View)?.measure((x, y, width, height, pageX, pageY) => {
+          setCardPositions(prev => ({
+            ...prev,
+            [index]: { 
+              x: pageX - width / 2,
+              y: pageY - height / 2
+            }
+          }));
+        });
+      }
+    }
+  };
+
+  // プラットフォーム判定
+  const isWeb = Platform.OS === 'web';
+
+  useEffect(() => {
+    const updateAllCardPositions = () => {
+      playerChoices.forEach((_, index) => {
+        updateCardPosition(index);
+      });
+    };
+
+    updateAllCardPositions();
+
+    // リサイズイベントのリスナーを追加
+    if (isWeb) {
+      window.addEventListener('resize', updateAllCardPositions);
+      return () => window.removeEventListener('resize', updateAllCardPositions);
+    }
+  }, [playerChoices]);
 
   const handleCardPress = (choice: ChoiceType) => {
     //console.log("handleCardPress", choice);
@@ -54,6 +104,7 @@ export default function JankenGame({
     setShowCardDetail(false);
     setSelectedCard(null);
   };
+
   return (
     <Pressable 
       style={styles.container}
@@ -104,6 +155,7 @@ export default function JankenGame({
               showResult={showResult}
               closeResult={closeResult}
               drawCount={drawCount}
+              startPosition={cardPositions[showResult.playerIndex]}
             />
           ) : (
             <View style={styles.playAreaPlaceholder} />
@@ -115,6 +167,9 @@ export default function JankenGame({
           {(playerChoices || []).map((choice, index) => (
             <View 
               key={index} 
+              ref={el => {
+                cardRefs.current[index] = el;
+              }}
               style={{ 
                 opacity: (showResult && showResult.playerIndex === index) ? 0 : 1 
               }}

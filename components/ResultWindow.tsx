@@ -16,25 +16,32 @@ interface ResultWindowProps {
   } | null;
   drawCount: number;
   closeResult: () => void;
+  startPosition?: { x: number; y: number };
 }
 
 const ResultWindow: React.FC<ResultWindowProps> = ({
   showResult,
   drawCount,
-  closeResult,
+  startPosition,
 }) => {
-  const playerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: 200 })).current;
+  const playerCardAnim = useRef(new Animated.ValueXY({ 
+    x: startPosition?.x ?? 0, 
+    y: startPosition?.y ?? 0 
+  })).current;
   const computerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: -200 })).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (showResult) {
-      // アニメーションの初期値をリセット
-      playerCardAnim.setValue({ x: 0, y: 200 });
+      // アニメーション開始時の位置を設定
+      playerCardAnim.setValue({ 
+        x: startPosition?.x ?? 0, 
+        y: startPosition?.y ?? 0 
+      });
       computerCardAnim.setValue({ x: 0, y: -200 });
       opacityAnim.setValue(0);
 
-      // カードの移動アニメーションと透明度のアニメーションを同時に実行
+      // アニメーション終了位置を(0,0)に設定
       Animated.parallel([
         Animated.timing(playerCardAnim, {
           toValue: { x: 0, y: 0 },
@@ -53,7 +60,7 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
         }),
       ]).start();
     }
-  }, [showResult]);
+  }, [showResult, startPosition]);
 
   if (!showResult) return null;
 

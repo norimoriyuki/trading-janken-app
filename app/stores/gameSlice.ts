@@ -43,10 +43,7 @@ export const handlePlayerMove = createAsyncThunk<
     result: "win" | "lose" | "draw";
     computerIndex: number;
   },
-  { 
-    playerIndex: number; 
-    stageId: string 
-  }
+  { playerIndex: number; stageId: string }
 >(
   'game/handlePlayerMove',
   async ({ playerIndex, stageId }, { getState, dispatch }) => {
@@ -60,9 +57,9 @@ export const handlePlayerMove = createAsyncThunk<
     const { playerChoices, computerChoices, drawCount } = currentStage;
     const randomComputerIndex = Math.floor(Math.random() * computerChoices.length);
     
-    const originalPlayerChoice = playerChoices[playerIndex];
-    const originalComputerChoice = computerChoices[randomComputerIndex];
-    const result = getResult(originalPlayerChoice, originalComputerChoice);
+    const playerChoice = playerChoices[playerIndex];
+    const computerChoice = computerChoices[randomComputerIndex];
+    const result = getResult(playerChoice, computerChoice);
 
     // スコアの更新
     if (result === "win") {
@@ -75,7 +72,7 @@ export const handlePlayerMove = createAsyncThunk<
     if (result === "win" || result === "lose" || (drawCount >= 2 && result === "draw")) {
       // プレイヤーがコンピュータのカードを獲得
       const newPlayerChoices = [...playerChoices];
-      newPlayerChoices[playerIndex] = originalComputerChoice;
+      newPlayerChoices[playerIndex] = computerChoice;
       dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
       
       // コンピュータの手を新しくシャッフル
@@ -86,16 +83,16 @@ export const handlePlayerMove = createAsyncThunk<
       const newPlayerChoices = [...playerChoices];
       const newComputerChoices = [...computerChoices];
       
-      newPlayerChoices[playerIndex] = originalComputerChoice;
-      newComputerChoices[randomComputerIndex] = originalPlayerChoice;
+      newPlayerChoices[playerIndex] = computerChoice;
+      newComputerChoices[randomComputerIndex] = playerChoice;
       
       dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
       dispatch(setComputerChoices({ stageId, computerChoices: newComputerChoices }));
     }
 
     return {
-      playerChoice: originalPlayerChoice,
-      computerChoice: originalComputerChoice,
+      playerChoice,
+      computerChoice,
       result,
       computerIndex: randomComputerIndex
     };
