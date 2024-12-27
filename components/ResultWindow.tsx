@@ -37,6 +37,9 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
   const computerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: -200 })).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
+  // カード間の距離を計算（カードセクションの幅とマージンから概算）
+  const cardDistance = 200; // カード2枚の中心間の距離（ピクセル）
+
   useEffect(() => {
     if (showResult) {
       // アニメーション開始時の位置を設定
@@ -71,25 +74,31 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
   const handlePress = () => {
     if (!showResult) return;
 
+    const originalPlayerPosition = {
+      x: startPosition?.x ?? 0,
+      y: startPosition?.y ?? 0
+    };
+
     // カードを交換するアニメーション
     Animated.parallel([
-      Animated.timing(playerCardAnim, {
-        toValue: { x: -150, y: -200 },  // プレイヤーのカードを相手の位置へ
+      /*Animated.timing(playerCardAnim, {
+        toValue: { 
+          x: -originalPlayerPosition.x - cardDistance,  
+          y: -originalPlayerPosition.y 
+        },
         duration: 500,
         useNativeDriver: true,
-      }),
+      }),*/ //originalの座標をコンピュータのが取ってないのでとるようにする
       Animated.timing(computerCardAnim, {
-        toValue: { x: 150, y: 200 },  // 相手のカードをプレイヤーの位置へ
-        duration: 500,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 0,
+        toValue: { 
+          x: originalPlayerPosition.x + cardDistance,  
+          y: originalPlayerPosition.y 
+        },
         duration: 500,
         useNativeDriver: true,
       }),
     ]).start(() => {
-      onAnimationComplete?.();  // アニメーション完了後にコールバックを実行
+      onAnimationComplete?.();
       closeResult();
     });
   };
