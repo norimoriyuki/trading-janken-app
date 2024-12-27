@@ -105,10 +105,15 @@ export default function JankenGame({
     setSelectedCard(null);
   };
 
+  const handleResultAnimationComplete = () => {
+    // ここでカードの交換ロジックを実行
+    console.log('カード交換アニメーション完了');
+  };
+
   return (
     <Pressable 
       style={styles.container}
-      onPress={() => showResult && closeResult()}
+      onPress={() => {}}
     >
       {/* Header */}
       <View style={styles.header}>
@@ -150,15 +155,14 @@ export default function JankenGame({
 
         {/* Play Area */}
         <View style={styles.playArea}>
-          {showResult ? (
+          {showResult && (
             <ResultWindow
               showResult={showResult}
               closeResult={closeResult}
               drawCount={drawCount}
               startPosition={cardPositions[showResult.playerIndex]}
+              onAnimationComplete={handleResultAnimationComplete}
             />
-          ) : (
-            <View style={styles.playAreaPlaceholder} />
           )}
         </View>
 

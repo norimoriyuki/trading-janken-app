@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   Animated,
+  Pressable,
 } from 'react-native';
 import JankenCard from './JankenCard';
 import { ChoiceType } from '@/app/types/models';
@@ -13,16 +14,21 @@ interface ResultWindowProps {
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
     result: string;
+    playerIndex: number;
+    computerIndex: number;
   } | null;
   drawCount: number;
   closeResult: () => void;
   startPosition?: { x: number; y: number };
+  onAnimationComplete?: () => void;
 }
 
 const ResultWindow: React.FC<ResultWindowProps> = ({
   showResult,
   drawCount,
   startPosition,
+  closeResult,
+  onAnimationComplete,
 }) => {
   const playerCardAnim = useRef(new Animated.ValueXY({ 
     x: startPosition?.x ?? 0, 
@@ -62,10 +68,39 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
     }
   }, [showResult, startPosition]);
 
+  const handlePress = () => {
+    if (!showResult) return;
+
+    // カードを交換するアニメーション
+    Animated.parallel([
+      Animated.timing(playerCardAnim, {
+        toValue: { x: -150, y: -200 },  // プレイヤーのカードを相手の位置へ
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(computerCardAnim, {
+        toValue: { x: 150, y: 200 },  // 相手のカードをプレイヤーの位置へ
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onAnimationComplete?.();  // アニメーション完了後にコールバックを実行
+      closeResult();
+    });
+  };
+
   if (!showResult) return null;
 
   return (
-    <View style={styles.resultContainer}>
+    <Pressable 
+      style={styles.resultContainer}
+      onPress={handlePress}  // Viewを押したときにアニメーションを開始
+    >
       <View style={styles.horizontalLayout}>
         <Animated.View 
           style={[
@@ -126,7 +161,7 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
           />
         </Animated.View>
       </View>
-    </View>
+    </Pressable>
   );
 };
 
