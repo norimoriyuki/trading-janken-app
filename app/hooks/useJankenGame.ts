@@ -5,10 +5,11 @@ import {
   resetLifeAndWinCount,
   setComputerChoices,
   setPlayerChoices,
+  setPlayerState,
 } from "../stores/gameSlice";
 import { useDispatch, useSelector } from "react-redux";
 import getRandomChoices from "../lib/get_random_choices";
-import { handlePlayerMove } from "../stores/gameSlice";
+import { handlePlayerMove, handleCardChange } from "../stores/gameSlice";
 import { AppDispatch } from "../stores";
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
@@ -16,7 +17,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const [showResult, setShowResult] = useState<{
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
-    result: string;
+    result: "win" | "lose" | "draw";
     playerIndex: number;
     computerIndex: number;
   } | null>(null);
@@ -34,6 +35,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   );
   const drawCount = useSelector(
     (state: RootState) => state.game.stages[stageId]?.drawCount
+  );
+  const playerState = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.playerState
   );
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
@@ -56,8 +60,8 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   };
 
   const handlePlayerChoice = async (playerIndex: number) => {
-    console.log("handlePlayerChoice called with showResult:", showResult);
-    
+    dispatch(setPlayerState({ stageId, playerState: "result" }));
+
     if (showResult !== null) {
       console.log("Returning early because showResult is not null");
       return;
@@ -65,17 +69,19 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
 
     try {
       console.log("Dispatching handlePlayerMove");
-      const result = await dispatch(handlePlayerMove({ playerIndex, stageId })).unwrap();
-      
+      const result = await dispatch(
+        handlePlayerMove({ playerIndex, stageId })
+      ).unwrap();
+
       await Promise.all([
-        new Promise(resolve => {
+        new Promise((resolve) => {
           console.log("Setting showResult with:", result);
           setShowResult({
             playerChoice: result.playerChoice,
             computerChoice: result.computerChoice,
             result: result.result,
             playerIndex: playerIndex,
-            computerIndex: result.computerIndex
+            computerIndex: result.computerIndex,
           });
           resolve(true);
         }),
@@ -94,8 +100,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       stageId,
       computerChoices: getRandomChoices(choices, 3, winCount),
     });
-    resetLifeAndWinCount({ stageId });
+    dispatch(resetLifeAndWinCount({ stageId }));
     getRandomEnemyImage();
+    dispatch(setPlayerState({ stageId, playerState: "thinking" }));
   };
 
   const closeScoreWindow = () => {
@@ -103,10 +110,11 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     onBackClick();
   };
 
-  const closeResult = () => {
+  const closeResult = async () => {
     setShowResult(null);
     if (life === 0) {
       setShowScoreWindow(true);
+      return;
     }
 
     if (drawCount === 0) {
@@ -117,6 +125,25 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       setTimeout(() => setShowScoreWindow(true), 100);
     }
 
+    if (showResult?.result) {
+      const result = await dispatch(
+        handleCardChange({
+          stageId,
+          result: showResult.result,
+          playerChoices,
+          playerIndex: showResult.playerIndex,
+          computerChoices,
+          computerIndex: showResult.computerIndex,
+          winCount,
+          drawCount,
+        })
+      ).unwrap();
+    }
+
+    dispatch(setPlayerState({ stageId, playerState: "shuffling" }));
+    setTimeout(() => {
+      dispatch(setPlayerState({ stageId, playerState: "thinking" }));
+    }, 1000);
   };
 
   return {
@@ -129,6 +156,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     isShuffling,
     enemyImage,
     drawCount,
+    playerState,
     handlePlayerChoice,
     resetGame,
     closeScoreWindow,

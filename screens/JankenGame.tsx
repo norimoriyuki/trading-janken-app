@@ -32,6 +32,7 @@ export default function JankenGame({
     winCount,
     enemyImage,
     drawCount,
+    playerState,
     handlePlayerChoice,
     resetGame,
     closeScoreWindow,
@@ -40,39 +41,45 @@ export default function JankenGame({
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [cardPositions, setCardPositions] = useState<{ [key: number]: { x: number; y: number }}>({});
+  const [cardPositions, setCardPositions] = useState<{
+    [key: number]: { x: number; y: number };
+  }>({});
 
   const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
 
   const updateCardPosition = (index: number) => {
     if (cardRefs.current[index]) {
       if (isWeb) {
-        const rect = (cardRefs.current[index] as HTMLDivElement)?.getBoundingClientRect();
+        const rect = (
+          cardRefs.current[index] as HTMLDivElement
+        )?.getBoundingClientRect();
         if (rect) {
-          setCardPositions(prev => ({
+          setCardPositions((prev) => ({
             ...prev,
-            [index]: { 
+            [index]: {
               x: rect.x - window.innerWidth / 2,
-              y: rect.y - window.innerHeight / 2
-            }
+              y: rect.y - window.innerHeight / 2,
+            },
           }));
         }
       } else {
-        (cardRefs.current[index] as View)?.measure((x, y, width, height, pageX, pageY) => {
-          setCardPositions(prev => ({
-            ...prev,
-            [index]: { 
-              x: pageX - width / 2,
-              y: pageY - height / 2
-            }
-          }));
-        });
+        (cardRefs.current[index] as View)?.measure(
+          (x, y, width, height, pageX, pageY) => {
+            setCardPositions((prev) => ({
+              ...prev,
+              [index]: {
+                x: pageX - width / 2,
+                y: pageY - height / 2,
+              },
+            }));
+          }
+        );
       }
     }
   };
 
   // プラットフォーム判定
-  const isWeb = Platform.OS === 'web';
+  const isWeb = Platform.OS === "web";
 
   useEffect(() => {
     const updateAllCardPositions = () => {
@@ -85,13 +92,14 @@ export default function JankenGame({
 
     // リサイズイベントのリスナーを追加
     if (isWeb) {
-      window.addEventListener('resize', updateAllCardPositions);
-      return () => window.removeEventListener('resize', updateAllCardPositions);
+      window.addEventListener("resize", updateAllCardPositions);
+      return () => window.removeEventListener("resize", updateAllCardPositions);
     }
   }, [playerChoices]);
 
   const handleCardPress = (choice: ChoiceType) => {
-    if (!showResult) {  // リザルト表示中は詳細を表示しない
+    if (!showResult) {
+      // リザルト表示中は詳細を表示しない
       setSelectedCard(choice);
       setShowDetail(true);
     }
@@ -108,12 +116,11 @@ export default function JankenGame({
     setSelectedCard(null);
   };
 
-
   return (
-    <Pressable 
-      style={styles.container}
-      onPress={() => {}}
-    >
+    <Pressable style={styles.container} onPress={() => {}}>
+      <View>
+        <Text>Player State: {playerState}</Text>
+      </View>
       {/* Header */}
       <View style={styles.header}>
         <Button title="降参" onPress={resetGame} />
@@ -123,11 +130,11 @@ export default function JankenGame({
       {/* Enemy Section */}
       <View style={styles.enemyContainer}>
         <Text style={styles.enemyText}>ランダムロボ</Text>
-        <Image 
-          source={typeof enemyImage === 'string' 
-            ? { uri: enemyImage } 
-            : enemyImage} 
-          style={styles.enemyImage} 
+        <Image
+          source={
+            typeof enemyImage === "string" ? { uri: enemyImage } : enemyImage
+          }
+          style={styles.enemyImage}
         />
       </View>
 
@@ -136,10 +143,11 @@ export default function JankenGame({
         {/* Computer Cards */}
         <View style={styles.cardContainer}>
           {(computerChoices || []).map((choice, index) => (
-            <View 
-              key={index} 
-              style={{ 
-                opacity: (showResult && showResult.computerIndex === index) ? 0 : 1 
+            <View
+              key={index}
+              style={{
+                opacity:
+                  showResult && showResult.computerIndex === index ? 0 : 1,
               }}
             >
               <JankenCard
@@ -161,25 +169,27 @@ export default function JankenGame({
               drawCount={drawCount}
               startPosition={cardPositions[showResult.playerIndex]}
             />
-          ) :
-          showDetail && selectedCard && (
-            <CardDetailWindow
-              choice={selectedCard}
-              onClose={closeCardDetail}
-            />
+          ) : (
+            showDetail &&
+            selectedCard && (
+              <CardDetailWindow
+                choice={selectedCard}
+                onClose={closeCardDetail}
+              />
+            )
           )}
         </View>
 
         {/* Player Cards */}
         <View style={styles.cardContainer}>
           {(playerChoices || []).map((choice, index) => (
-            <View 
-              key={index} 
-              ref={el => {
+            <View
+              key={index}
+              ref={(el) => {
                 cardRefs.current[index] = el;
               }}
-              style={{ 
-                opacity: (showResult && showResult.playerIndex === index) ? 0 : 1 
+              style={{
+                opacity: showResult && showResult.playerIndex === index ? 0 : 1,
               }}
             >
               <JankenCard
@@ -242,8 +252,8 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   cardContainer: {
-    height: '30%', 
-    alignItems: 'center',
+    height: "30%",
+    alignItems: "center",
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
@@ -292,16 +302,16 @@ const styles = StyleSheet.create({
   },
   gameArea: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   playArea: {
-    height: '40%', // 固定の高さを確保
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: "40%", // 固定の高さを確保
+    justifyContent: "center",
+    alignItems: "center",
     padding: 10,
   },
   playAreaPlaceholder: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   },
 });
