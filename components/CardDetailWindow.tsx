@@ -17,37 +17,27 @@ interface CardDetailWindowProps {
 const CardDetailWindow: React.FC<CardDetailWindowProps> = ({ choice, onClose }) => {
   return (
     <TouchableWithoutFeedback onPress={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.detailWindow}>
-          <Text style={styles.name}>{choice.name}</Text>
-          <Image
-            source={choice.img}
-            style={styles.image}
-          />
-          <Text style={styles.description}>{choice.description}</Text>
-        </View>
+      <View style={styles.detailWindow}>
+        <Text style={styles.name}>{choice.name}</Text>
+        <Image
+          source={choice.img}
+          style={styles.image}
+        />
+        <Text style={styles.description}>{choice.description}</Text>
       </View>
     </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   detailWindow: {
-    backgroundColor: '#fff',
-    padding: 20,
     borderRadius: 10,
-    width: Dimensions.get('window').width * 0.8,
+    width: '80%',
     alignItems: 'center',
+
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   name: {
     fontSize: 24,

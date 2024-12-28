@@ -41,11 +41,9 @@ export const handlePlayerMove = createAsyncThunk<
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
     result: "win" | "lose" | "draw";
+    computerIndex: number;
   },
-  { 
-    playerIndex: number; 
-    stageId: string 
-  }
+  { playerIndex: number; stageId: string }
 >(
   'game/handlePlayerMove',
   async ({ playerIndex, stageId }, { getState, dispatch }) => {
@@ -95,7 +93,8 @@ export const handlePlayerMove = createAsyncThunk<
     return {
       playerChoice,
       computerChoice,
-      result
+      result,
+      computerIndex: randomComputerIndex
     };
   }
 );

@@ -1,5 +1,6 @@
 import { Image, View, Text, Pressable, PanResponder, Animated } from "react-native";
 import { useRef } from 'react';
+import { ChoiceType } from "../app/types/models";
 
 interface JankenCardProps {
   choice: {
@@ -13,6 +14,7 @@ interface JankenCardProps {
   onCardPress: () => void;
   isPlayerHand?: boolean;
   className?: string;
+  showResult: { playerChoice: ChoiceType; computerChoice: ChoiceType; result: string; } | null;
 }
 
 const adjustColorBrightness = (color: string): string => {
@@ -34,6 +36,7 @@ export default function JankenCard({
   onCardPress,
   isPlayerHand = false,
   className = "",
+  showResult,
 }: JankenCardProps) {
   const isSwipingRef = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
@@ -41,15 +44,15 @@ export default function JankenCard({
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+        return showResult === null && (Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2);
       },
       onMoveShouldSetPanResponder: (evt, gestureState) => {
-        return Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2;
+        return showResult === null && (Math.abs(gestureState.dx) > 2 || Math.abs(gestureState.dy) > 2);
       },
       onPanResponderGrant: () => {
         isSwipingRef.current = true;
       },
-      onPanResponderMove: isPlayerHand
+      onPanResponderMove: (isPlayerHand && showResult === null)
         ? Animated.event([null, { dx: pan.x, dy: pan.y }], {
             useNativeDriver: false,
           })
@@ -87,9 +90,9 @@ export default function JankenCard({
 
   return (
     <Animated.View
-      {...panResponder.panHandlers}
+      {...(showResult === null ? panResponder.panHandlers : {})}
       style={[
-        isPlayerHand && { transform: [{ translateX: pan.x }, { translateY: pan.y }] },
+        isPlayerHand && showResult === null && { transform: [{ translateX: pan.x }, { translateY: pan.y }] },
       ]}
     >
       <Pressable
@@ -110,6 +113,7 @@ export default function JankenCard({
           justifyContent: "space-around",
           position: "relative",
           overflow: "hidden",
+          opacity: showResult === null ? 1 : 0.7,
         }}
       >
         <View

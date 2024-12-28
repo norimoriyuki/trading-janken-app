@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
-  TouchableWithoutFeedback,
   StyleSheet,
-  Dimensions,
+  Animated,
+  Pressable,
 } from 'react-native';
 import JankenCard from './JankenCard';
 import { ChoiceType } from '@/app/types/models';
@@ -14,33 +14,121 @@ interface ResultWindowProps {
     playerChoice: ChoiceType;
     computerChoice: ChoiceType;
     result: string;
+    playerIndex: number;
+    computerIndex: number;
   } | null;
   drawCount: number;
   closeResult: () => void;
+  startPosition?: { x: number; y: number };
+  onAnimationComplete?: () => void;
 }
 
 const ResultWindow: React.FC<ResultWindowProps> = ({
   showResult,
   drawCount,
+  startPosition,
   closeResult,
+  onAnimationComplete,
 }) => {
+  const playerCardAnim = useRef(new Animated.ValueXY({ 
+    x: startPosition?.x ?? 0, 
+    y: startPosition?.y ?? 0 
+  })).current;
+  const computerCardAnim = useRef(new Animated.ValueXY({ x: 0, y: -200 })).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+
+  // カード間の距離を計算（カードセクションの幅とマージンから概算）
+  const cardDistance = 200; // カード2枚の中心間の距離（ピクセル）
+
+  useEffect(() => {
+    if (showResult) {
+      // アニメーション開始時の位置を設定
+      playerCardAnim.setValue({ 
+        x: startPosition?.x ?? 0, 
+        y: startPosition?.y ?? 0 
+      });
+      computerCardAnim.setValue({ x: 0, y: -200 });
+      opacityAnim.setValue(0);
+
+      // アニメーション終了位置を(0,0)に設定
+      Animated.parallel([
+        Animated.timing(playerCardAnim, {
+          toValue: { x: 0, y: 0 },
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(computerCardAnim, {
+          toValue: { x: 0, y: 0 },
+          duration: 500,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showResult, startPosition]);
+
+  const handlePress = () => {
+    if (!showResult) return;
+
+    const originalPlayerPosition = {
+      x: startPosition?.x ?? 0,
+      y: startPosition?.y ?? 0
+    };
+
+    // カードを交換するアニメーション
+    Animated.parallel([
+      /*Animated.timing(playerCardAnim, {
+        toValue: { 
+          x: -originalPlayerPosition.x - cardDistance,  
+          y: -originalPlayerPosition.y 
+        },
+        duration: 500,
+        useNativeDriver: true,
+      }),*/ //originalの座標をコンピュータのが取ってないのでとるようにする
+      Animated.timing(computerCardAnim, {
+        toValue: { 
+          x: originalPlayerPosition.x + cardDistance,  
+          y: originalPlayerPosition.y 
+        },
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      onAnimationComplete?.();
+      closeResult();
+    });
+  };
+
   if (!showResult) return null;
 
   return (
-    <TouchableWithoutFeedback onPress={closeResult}>
-      <View style={styles.overlay}>
-        <View style={styles.resultWindow}>
-          <View style={styles.resultContainer}>
-            {/* Computer's choice */}
-            <View style={styles.choice}>
-              <JankenCard
-                choice={showResult.computerChoice}
-                onSwipeUp={() => {}}
-                onCardPress={() => {}}
-              />
-            </View>
-          </View>
+    <Pressable 
+      style={styles.resultContainer}
+      onPress={handlePress}  // Viewを押したときにアニメーションを開始
+    >
+      <View style={styles.horizontalLayout}>
+        <Animated.View 
+          style={[
+            styles.cardSection,
+            {
+              transform: computerCardAnim.getTranslateTransform(),
+              opacity: opacityAnim,
+            }
+          ]}
+        >
+          <JankenCard
+            choice={showResult.computerChoice}
+            onSwipeUp={() => {}}
+            onCardPress={() => {}}
+            showResult={null}
+          />
+        </Animated.View>
 
+        <View style={styles.resultSection}>
           <Text style={styles.resultText}>
             {showResult.result === 'win'
               ? 'WIN'
@@ -48,7 +136,6 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
               ? 'LOSE'
               : `あいこ${drawCount > 0 ? `（${drawCount}/3）` : '3/3'}`}
           </Text>
-
           <View style={styles.resultIcon}>
             {((showResult.result === 'win') ||
               (showResult.result === 'reset')) && (
@@ -64,44 +151,53 @@ const ResultWindow: React.FC<ResultWindowProps> = ({
               </View>
             )}
           </View>
-
-          <View style={styles.choice}>
-            <JankenCard
-              choice={showResult.playerChoice}
-              onSwipeUp={() => {}}
-              onCardPress={() => {}}
-            />
-          </View>
         </View>
+
+        <Animated.View 
+          style={[
+            styles.cardSection,
+            {
+              transform: playerCardAnim.getTranslateTransform(),
+              opacity: opacityAnim,
+            }
+          ]}
+        >
+          <JankenCard
+            choice={showResult.playerChoice}
+            onSwipeUp={() => {}}
+            onCardPress={() => {}}
+            showResult={null}
+          />
+        </Animated.View>
       </View>
-    </TouchableWithoutFeedback>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  resultContainer: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  resultWindow: {
-    backgroundColor: '#d3d3d3',
-    padding: 20,
-    borderRadius: 10,
-    width: Dimensions.get('window').width * 0.8,
+  horizontalLayout: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    width: '80%',
+    height: '100%',
   },
-  resultContainer: {
-    width: '100%',
+  cardSection: {
+    width: '30%',
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  choice: {
-    marginVertical: 10,
+  resultSection: {
+    width: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 20,
   },
   resultText: {
     fontSize: 24,

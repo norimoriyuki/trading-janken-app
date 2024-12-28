@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
   Button,
   Image,
   StyleSheet,
-  Modal,
-  ScrollView
+  Pressable,
+  Platform,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
 import ResultWindow from "../components/ResultWindow";
@@ -14,7 +14,6 @@ import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import { ChoiceType } from "../app/types/models";
 import CardDetailWindow from "../components/CardDetailWindow";
-
 
 export default function JankenGame({
   onBackClick,
@@ -40,21 +39,81 @@ export default function JankenGame({
   } = useJankenGame(onBackClick, stageId);
 
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
-  const [showCardDetail, setShowCardDetail] = useState(false);
+  const [showDetail, setShowDetail] = useState(false);
+  const [cardPositions, setCardPositions] = useState<{ [key: number]: { x: number; y: number }}>({});
 
-  const handleCardPress = (choice: ChoiceType) => {
-    console.log("handleCardPress", choice);
-    setSelectedCard(choice);
-    setShowCardDetail(true);
+  const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
+
+  const updateCardPosition = (index: number) => {
+    if (cardRefs.current[index]) {
+      if (isWeb) {
+        const rect = (cardRefs.current[index] as HTMLDivElement)?.getBoundingClientRect();
+        if (rect) {
+          setCardPositions(prev => ({
+            ...prev,
+            [index]: { 
+              x: rect.x - window.innerWidth / 2,
+              y: rect.y - window.innerHeight / 2
+            }
+          }));
+        }
+      } else {
+        (cardRefs.current[index] as View)?.measure((x, y, width, height, pageX, pageY) => {
+          setCardPositions(prev => ({
+            ...prev,
+            [index]: { 
+              x: pageX - width / 2,
+              y: pageY - height / 2
+            }
+          }));
+        });
+      }
+    }
   };
 
-  const closeCardDetail = () => {
-    setShowCardDetail(false);
+  // プラットフォーム判定
+  const isWeb = Platform.OS === 'web';
+
+  useEffect(() => {
+    const updateAllCardPositions = () => {
+      playerChoices.forEach((_, index) => {
+        updateCardPosition(index);
+      });
+    };
+
+    updateAllCardPositions();
+
+    // リサイズイベントのリスナーを追加
+    if (isWeb) {
+      window.addEventListener('resize', updateAllCardPositions);
+      return () => window.removeEventListener('resize', updateAllCardPositions);
+    }
+  }, [playerChoices]);
+
+  const handleCardPress = (choice: ChoiceType) => {
+    if (!showResult) {  // リザルト表示中は詳細を表示しない
+      setSelectedCard(choice);
+      setShowDetail(true);
+    }
+  };
+
+  const handleSwipeUp = async (index: number) => {
+    await handlePlayerChoice(index);
+    setShowDetail(false);
     setSelectedCard(null);
   };
 
+  const closeCardDetail = () => {
+    setShowDetail(false);
+    setSelectedCard(null);
+  };
+
+
   return (
-    <View style={styles.container}>
+    <Pressable 
+      style={styles.container}
+      onPress={() => {}}
+    >
       {/* Header */}
       <View style={styles.header}>
         <Button title="降参" onPress={resetGame} />
@@ -72,31 +131,67 @@ export default function JankenGame({
         />
       </View>
 
-      {/* Computer Cards */}
-      <View style={styles.cardContainer}>
-        <Text style={styles.enemyText}>相手の手</Text>
-        {(computerChoices || []).map((choice, index) => (
-          <JankenCard
-            key={index}
-            choice={choice}
-            onSwipeUp={() => {}}
-            onCardPress={() => handleCardPress(choice)}
-          />
-        ))}
-      </View>
+      {/* Game Area */}
+      <View style={styles.gameArea}>
+        {/* Computer Cards */}
+        <View style={styles.cardContainer}>
+          {(computerChoices || []).map((choice, index) => (
+            <View 
+              key={index} 
+              style={{ 
+                opacity: (showResult && showResult.computerIndex === index) ? 0 : 1 
+              }}
+            >
+              <JankenCard
+                choice={choice}
+                onSwipeUp={() => {}}
+                onCardPress={() => !showResult && handleCardPress(choice)}
+                showResult={showResult}
+              />
+            </View>
+          ))}
+        </View>
 
-      {/* Player Cards */}
-      <View style={styles.cardContainer}>
-        <Text style={styles.enemyText}>あなたの手</Text>
-        {(playerChoices || []).map((choice, index) => (
-          <JankenCard
-            key={index}
-            choice={choice}
-            onSwipeUp={() => handlePlayerChoice(index)}
-            onCardPress={() => handleCardPress(choice)}
-            isPlayerHand
-          />
-        ))}
+        {/* Play Area */}
+        <View style={styles.playArea}>
+          {showResult ? (
+            <ResultWindow
+              showResult={showResult}
+              closeResult={closeResult}
+              drawCount={drawCount}
+              startPosition={cardPositions[showResult.playerIndex]}
+            />
+          ) :
+          showDetail && selectedCard && (
+            <CardDetailWindow
+              choice={selectedCard}
+              onClose={closeCardDetail}
+            />
+          )}
+        </View>
+
+        {/* Player Cards */}
+        <View style={styles.cardContainer}>
+          {(playerChoices || []).map((choice, index) => (
+            <View 
+              key={index} 
+              ref={el => {
+                cardRefs.current[index] = el;
+              }}
+              style={{ 
+                opacity: (showResult && showResult.playerIndex === index) ? 0 : 1 
+              }}
+            >
+              <JankenCard
+                choice={choice}
+                onSwipeUp={() => handleSwipeUp(index)}
+                onCardPress={() => handleCardPress(choice)}
+                isPlayerHand
+                showResult={showResult}
+              />
+            </View>
+          ))}
+        </View>
       </View>
 
       {/* Player Info */}
@@ -106,29 +201,10 @@ export default function JankenGame({
         <Text style={styles.playerText}>引き分け: {drawCount}</Text>
       </View>
 
-      {/* Result Modal */}
-      {showResult && (
-        <Modal transparent>
-          <ResultWindow
-            showResult={showResult}
-            closeResult={closeResult}
-            drawCount={0}
-          />
-        </Modal>
-      )}
-
       {showScoreWindow && (
         <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
       )}
-
-      {/* Card Detail Modal */}
-      {showCardDetail && selectedCard && (
-        <CardDetailWindow
-          choice={selectedCard}
-          onClose={closeCardDetail}
-        />
-      )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -166,6 +242,8 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   cardContainer: {
+    height: '30%', 
+    alignItems: 'center',
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
@@ -196,20 +274,8 @@ const styles = StyleSheet.create({
   lifeContainer: {
     margin: -5,
   },
-  heart: {
-    // Add styles for heart if needed
-  },
-  heartAnimate: {
-    // Add styles for heart animation if needed
-  },
   winContainer: {
     margin: -5,
-  },
-  star: {
-    // Add styles for star if needed
-  },
-  instructionText: {
-    // Add styles for instruction text if needed
   },
   modalOverlay: {
     flex: 1,
@@ -223,5 +289,19 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     maxWidth: "80%",
     textAlign: "center",
+  },
+  gameArea: {
+    flex: 1,
+    justifyContent: 'space-between',
+  },
+  playArea: {
+    height: '40%', // 固定の高さを確保
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  playAreaPlaceholder: {
+    width: '100%',
+    height: '100%',
   },
 });
