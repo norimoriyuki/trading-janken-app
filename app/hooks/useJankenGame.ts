@@ -2,8 +2,6 @@ import { useState } from "react";
 import { ChoiceType, choices } from "@/app/types/models";
 import { RootState } from "../stores";
 import {
-  incrementWinCount,
-  decrementLife,
   resetLifeAndWinCount,
   setComputerChoices,
   setPlayerChoices,
@@ -15,11 +13,6 @@ import { AppDispatch } from "../stores";
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const DEFAULT_DRAW_COUNT = 0;
-  // const [computerChoices, setComputerChoices] = useState<ChoiceType[]>([]);
-  // const [playerChoices, setPlayerChoices] = useState<ChoiceType[]>([]);
-  const [gameSceneState, setGameSceneState] = useState<
-    "choosing" | "janken_result" | "game_result"
-  >("choosing");
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
   const [showResult, setShowResult] = useState<{
     playerChoice: ChoiceType;
@@ -60,13 +53,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       enemyImages[Math.floor(Math.random() * enemyImages.length)];
     setEnemyImage(randomImage);
   };
-
-  // useEffect(() => {
-  //   if (computerChoices.length === 0) {
-  //     setComputerChoices({stageId, computerChoices: getRandomChoices(choices, 3, winCount)});
-  //     setPlayerChoices({stageId, playerChoices: getRandomChoices(choices, 3, winCount)});
-  //   }
-  // }, []);
 
   const handlePlayerChoice = async (playerIndex: number) => {
     console.log("handlePlayerChoice called with showResult:", showResult);
@@ -133,72 +119,12 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
 
     if (drawCount === 0) {
       getRandomEnemyImage();
-      // setIsEnemyImageAnimating(true);
-      // setIsShuffling(true);
-      // setTimeout(() => {
-      //   setComputerChoices({
-      //     stageId,
-      //     computerChoices: getRandomChoices(choices, 3, winCount),
-      //   });
-      //   setTimeout(() => setIsShuffling(false), 600);
-      //   //   setTimeout(() => setIsEnemyImageAnimating(false), 600);
-      // }, 100);
     }
 
     if (life <= 0) {
       setTimeout(() => setShowScoreWindow(true), 100);
     }
 
-    //   if (slidingInIndex !== null) {
-    //     setTimeout(() => setSlidingInIndex(null), 600);
-    //   }
-  };
-
-  const updateGameSceneState = () => {
-    console.log("ゲームシーンの状態を更新します。現在の状態:", gameSceneState);
-    if (gameSceneState === "choosing") {
-      setGameSceneState("janken_result");
-    }
-    if (gameSceneState === "janken_result") {
-      if (life === 0) {
-        setGameSceneState("game_result");
-      } else {
-        setGameSceneState("choosing");
-      }
-    }
-    console.log("更新後のゲームシーンの状態:", gameSceneState);
-  };
-
-  const updatePlayerScore = (result: "win" | "lose" | "draw") => {
-    //console.log("プレイヤーのスコアを更新します。結果:", result);
-    if (result === "win") {
-      dispatch(incrementWinCount({ stageId }));
-    } else if (result === "lose") {
-      dispatch(decrementLife({ stageId }));
-    }
-  }
-
-  const updatePlayerAndComputerChoices = (
-    result: "win" | "lose" | "draw",
-    playerIndex: number,
-    computerIndex: number
-  ) => {
-    //console.log("プレイヤーとコンピュータの選択を更新します。結果:", result, "プレイヤーのインデックス:", playerIndex, "コンピュータのインデックス:", computerIndex);
-    if (result === "win" || (drawCount >= 2 && result === "draw")) {
-      getComputerCard(playerIndex, computerIndex);
-      shuffleComputerChoices();
-      setDrawCount(0);
-      //console.log("更新後のドロー回数win:", 0);
-    } else if (result === "lose") {
-      getComputerCard(playerIndex, computerIndex);
-      shuffleComputerChoices();
-      setDrawCount(0);
-      //console.log("更新後のドロー回数 lose:", 0);
-    } else {
-      setDrawCount(prevDrawCount => prevDrawCount + 1);
-      exchangePlayerAndComputerCard(playerIndex, computerIndex);
-      //console.log("更新後のドロー回数 draw:", drawCount + 1);
-    }
   };
 
   const getComputerCard = (playerIndex: number, computerIndex: number) => {
@@ -211,7 +137,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     playerIndex: number,
     computerIndex: number
   ) => {
-    //console.log("プレイヤーとコンピュータのカードを交換します。プレイヤーのインデックス:", playerIndex, "コンピュータのインデックス:", computerIndex);
     const playerChoice = playerChoices[playerIndex];
     const computerChoice = computerChoices[computerIndex];
 
@@ -223,20 +148,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
 
     dispatch(setPlayerChoices({ stageId, playerChoices: updatedPlayerChoices }));
     dispatch(setComputerChoices({ stageId, computerChoices: updatedComputerChoices }));
-    //console.log("更新後のプレイヤーの選択:", updatedPlayerChoices);
-    //console.log("更新後のコンピュータの選択:", updatedComputerChoices);
-  };
-
-  const shuffleComputerChoices = () => {
-    //console.log("コンピュータの選択をシャッフルします。");
-    //console.log("シャッフル前のコンピュータの選択:", computerChoices);
-    const newComputerChoices = getRandomChoices(choices, 3, winCount);
-    //console.log("シャッフル後のコンピュータの選択:", newComputerChoices);
-    dispatch(setComputerChoices({
-      stageId,
-      computerChoices: newComputerChoices,
-    }));
-    //console.log("シャッフル後のコンピュータの選択:", computerChoices);
   };
 
   return {
