@@ -142,22 +142,29 @@ export default function JankenGame({
       <View style={styles.gameArea}>
         {/* Computer Cards */}
         <View style={styles.cardContainer}>
-          {(computerChoices || []).map((choice, index) => (
-            <View
-              key={index}
-              style={{
-                opacity:
-                  showResult && showResult.computerIndex === index ? 0 : 1,
-              }}
-            >
-              <JankenCard
-                choice={choice}
-                onSwipeUp={() => {}}
-                onCardPress={() => !showResult && handleCardPress(choice)}
-                showResult={showResult}
-              />
-            </View>
-          ))}
+          {playerState === "shuffling" ? (
+            <Image
+              source={require("../assets/miserarenaiyo.jpg")}
+              style={{ width: 100, height: 100 }}
+            />
+          ) : (
+            (computerChoices || []).map((choice, index) => (
+              <View
+                key={index}
+                style={{
+                  opacity:
+                    showResult && showResult.computerIndex === index ? 0 : 1,
+                }}
+              >
+                <JankenCard
+                  choice={choice}
+                  onSwipeUp={() => {}}
+                  onCardPress={() => !showResult && handleCardPress(choice)}
+                  showResult={showResult}
+                />
+              </View>
+            ))
+          )}
         </View>
 
         {/* Play Area */}

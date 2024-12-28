@@ -139,11 +139,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
         })
       ).unwrap();
     }
-
-    dispatch(setPlayerState({ stageId, playerState: "shuffling" }));
-    setTimeout(() => {
-      dispatch(setPlayerState({ stageId, playerState: "thinking" }));
-    }, 1000);
   };
 
   return {

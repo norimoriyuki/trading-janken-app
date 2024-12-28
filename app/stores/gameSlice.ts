@@ -159,6 +159,11 @@ export const handleCardChange = createAsyncThunk<
         setComputerChoices({ stageId, computerChoices: newComputerChoices })
       );
       console.log("Computer's new hand:", newComputerChoices);
+      
+      dispatch(setPlayerState({ stageId, playerState: "shuffling" }));
+      setTimeout(() => {
+        dispatch(setPlayerState({ stageId, playerState: "thinking" }));
+      }, 1000);
     } else {
       // 通常の引き分け → カード交換
       const newPlayerChoices = [...playerChoices];
