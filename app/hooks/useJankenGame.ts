@@ -12,7 +12,6 @@ import { handlePlayerMove } from "../stores/gameSlice";
 import { AppDispatch } from "../stores";
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
-  const DEFAULT_DRAW_COUNT = 0;
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
   const [showResult, setShowResult] = useState<{
     playerChoice: ChoiceType;
@@ -33,7 +32,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const playerChoices = useSelector(
     (state: RootState) => state.game.stages[stageId]?.playerChoices
   );
-  const [drawCount, setDrawCount] = useState<number>(DEFAULT_DRAW_COUNT);
+  const drawCount = useSelector(
+    (state: RootState) => state.game.stages[stageId]?.drawCount
+  );
   const [isShuffling, setIsShuffling] = useState<boolean>(false);
   const [enemyImage, setEnemyImage] = useState<string>(
     require("@assets/robot1_blue.png")
@@ -78,14 +79,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           });
           resolve(true);
         }),
-        new Promise(resolve => {
-          if (result.result === "draw") {
-            setDrawCount(prev => prev + 1);
-          } else {
-            setDrawCount(0);
-          }
-          resolve(true);
-        })
       ]);
 
       return result;
@@ -102,7 +95,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       computerChoices: getRandomChoices(choices, 3, winCount),
     });
     resetLifeAndWinCount({ stageId });
-    setDrawCount(0);
     getRandomEnemyImage();
   };
 
@@ -125,29 +117,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
       setTimeout(() => setShowScoreWindow(true), 100);
     }
 
-  };
-
-  const getComputerCard = (playerIndex: number, computerIndex: number) => {
-    const newPlayerChoices = [...playerChoices];
-    newPlayerChoices[playerIndex] = computerChoices[computerIndex];
-    dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
-  }
-
-  const exchangePlayerAndComputerCard = (
-    playerIndex: number,
-    computerIndex: number
-  ) => {
-    const playerChoice = playerChoices[playerIndex];
-    const computerChoice = computerChoices[computerIndex];
-
-    const updatedPlayerChoices = [...playerChoices];
-    const updatedComputerChoices = [...computerChoices];
-
-    updatedPlayerChoices[playerIndex] = computerChoice;
-    updatedComputerChoices[computerIndex] = playerChoice;
-
-    dispatch(setPlayerChoices({ stageId, playerChoices: updatedPlayerChoices }));
-    dispatch(setComputerChoices({ stageId, computerChoices: updatedComputerChoices }));
   };
 
   return {
