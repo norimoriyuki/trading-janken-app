@@ -64,8 +64,17 @@ export const handlePlayerMove = createAsyncThunk<
     // スコアの更新
     if (result === "win") {
       dispatch(incrementWinCount({ stageId }));
+      dispatch(setDrawCount({ stageId, drawCount: 0 }));
     } else if (result === "lose") {
       dispatch(decrementLife({ stageId }));
+      dispatch(setDrawCount({ stageId, drawCount: 0 }));
+    } else if (result === "draw") {
+      if (drawCount >= 2) {
+        dispatch(setDrawCount({ stageId, drawCount: 0 }));
+        dispatch(incrementWinCount({ stageId }));
+      } else {
+        dispatch(setDrawCount({ stageId, drawCount: drawCount + 1 }));
+      }
     }
 
     // カードの更新
@@ -172,6 +181,13 @@ const gameSlice = createSlice({
       }
       state.stages[stageId].playerChoices = playerChoices;
     },
+    setDrawCount(state, action: PayloadAction<{ stageId: string; drawCount: number }>) {
+      const { stageId, drawCount } = action.payload;
+      if (!state.stages[stageId]) {
+        throw new Error("Stage not found");
+      }
+      state.stages[stageId].drawCount = drawCount;
+    }
   },
 });
 
@@ -182,5 +198,6 @@ export const {
   resetLifeAndWinCount,
   setComputerChoices,
   setPlayerChoices,
+  setDrawCount,
 } = gameSlice.actions;
 export default gameSlice.reducer;
