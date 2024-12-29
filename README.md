@@ -1,50 +1,35 @@
-# Welcome to your Expo app 👋
+# Trading Janken App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## 起動方法
+yarn install
+yarn start
 
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## 環境構築
+### リポジトリのclone
+```
+# 指定のディレクトリに移動
+git clone https://github.com/norimoriyuki/trading-janken-app.git
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### homebrewのインストール
+homebrewインストールされていない向け、されている場合はスキップ
 
-## Learn more
+```
+brew -v # バージョンが表示されれば導入済みなので、スキップ
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew -v # バージョンが表示されればOK
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### nodeのインストール
+nodeインストールされていない向け、されている場合はスキップ
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```
+node -v # バージョンが表示されれば導入済みなので、スキップ
+brew install node
+node -v # バージョンが表示されればOK
+```
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 推奨プログラミング環境
+Cursor
+[インストール方法](https://www.cursor.com/)
+([brewでもinstallできるよ](https://formulae.brew.sh/cask/cursor))
