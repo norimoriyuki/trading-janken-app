@@ -1,8 +1,8 @@
 # いってらっしゃい
-hello:
+dafault:
     banner -w 50 "ITTERASSHAI" && say "いってらっしゃい！"
 
-install:
+init:
     yarn install
 
 run:
