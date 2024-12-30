@@ -215,7 +215,7 @@ export default function JankenGame({
       {/* Player Info */}
       <View style={styles.playerContainer}>
         <Text style={styles.playerText}>
-          {Array(life).fill('❤️').join('')}
+          {life > 0 ?? Array(life).fill('❤️').join('')}
         </Text>
         <Text style={styles.playerText}>⭐️ {winCount}</Text>
       </View>
