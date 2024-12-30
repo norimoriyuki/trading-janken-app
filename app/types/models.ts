@@ -4,6 +4,7 @@ export interface ChoiceType {
   description: string;
   type: ChoiceTypeEnum;
   level: number;
+  id: number;
 }
 
 export type ChoiceTypeEnum = "rock" | "scissors" | "paper" | "other";
@@ -15,6 +16,7 @@ export const choices: ChoiceType[] = [
     description: "ふつうのグー",
     type: "rock",
     level: 0,
+    id: 0,
   },
   {
     name: "チョキ",
@@ -22,6 +24,7 @@ export const choices: ChoiceType[] = [
     description: "ふつうのチョキ",
     type: "scissors",
     level: 0,
+    id: 1,
   },
   {
     name: "パー",
@@ -29,6 +32,7 @@ export const choices: ChoiceType[] = [
     description: "ふつうのパー",
     type: "paper",
     level: 0,
+    id: 2,
   },
   {
     name: "金の玉",
@@ -36,6 +40,7 @@ export const choices: ChoiceType[] = [
     description: "高位のグー。グーに勝つ",
     type: "rock",
     level: 1,
+    id: 3,
   },
   {
     name: "ザリガニ",
@@ -43,6 +48,7 @@ export const choices: ChoiceType[] = [
     description: "高位のチョキ。チョキに勝つ",
     type: "scissors",
     level: 1,
+    id: 4,
   },
   {
     name: "札",
@@ -50,6 +56,7 @@ export const choices: ChoiceType[] = [
     description: "高位のパー。パーに勝つ",
     type: "paper",
     level: 1,
+    id: 5,
   },
   {
     name: "隕石",
@@ -57,6 +64,7 @@ export const choices: ChoiceType[] = [
     description: "最高位のグー。他のグー系に勝つ",
     type: "rock",
     level: 2,
+    id: 6,
   },
   {
     name: "村正",
@@ -64,6 +72,7 @@ export const choices: ChoiceType[] = [
     description: "最高位のチョキ。他のチョキ系に勝つ",
     type: "scissors",
     level: 2,
+    id: 7,
   },
   {
     name: "愛",
@@ -71,6 +80,7 @@ export const choices: ChoiceType[] = [
     description: "最高位のパー。他のパー系に勝つ",
     type: "paper",
     level: 2,
+    id: 8,
   },
   {
     name: "バリアー",
@@ -78,6 +88,7 @@ export const choices: ChoiceType[] = [
     description: "どの手ともあいこになる",
     type: "other",
     level: 0,
+    id: 9,
   },
 ];
 
