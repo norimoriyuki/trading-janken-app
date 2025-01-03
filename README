@@ -1,8 +1,10 @@
 # Trading Janken App
 
 ## 起動方法
+```
 yarn install
 yarn start
+```
 
 ## 環境構築
 ### リポジトリのclone
