@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "#f9f9f9",
+    backgroundColor: "#F5F5F5",
   },
   cardWrapper: {
     flexDirection: "row",
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F5F5F5",
     padding: 16,
   },
 });
