@@ -1,13 +1,20 @@
-import { View, Text, Button, Image, StyleSheet, Pressable } from "react-native";
+import React from "react";
+import {
+  View,
+  Text,
+  Button,
+  Image,
+  StyleSheet,
+  Pressable,
+  SafeAreaView,
+} from "react-native";
 import JankenCard from "../components/JankenCard";
 import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
-import { ChoiceType } from "../app/types/models";
 import CardDetailWindow from "../components/CardDetailWindow";
 import Life from "@/components/Life";
 import Score from "@/components/Score";
-import React from "react";
 
 export default function JankenGame({
   onBackClick,
@@ -15,7 +22,6 @@ export default function JankenGame({
 }: {
   onBackClick: () => void;
   stageId: string;
-  playerChoices: ChoiceType[];
 }) {
   const {
     computerChoices,
@@ -40,60 +46,39 @@ export default function JankenGame({
   } = useJankenGame(onBackClick, stageId);
 
   return (
-    <Pressable style={styles.container} onPress={() => {}}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Button title="降参" onPress={resetGame} />
-        <Text style={styles.headerText}>Trading Janken</Text>
-      </View>
-      <View style={styles.infoContainer}>
-        <Life count={life} />
-        <Score score={winCount} />
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <Pressable style={styles.container} onPress={() => {}}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Button title="降参" onPress={resetGame} />
+          <Text style={styles.headerText}>Trading Janken</Text>
+        </View>
 
-      {/* Enemy Section */}
-      <View style={styles.enemyContainer}>
-        <Text style={styles.enemyText}>ランダムロボ</Text>
-        <Image
-          source={
-            typeof enemyImage === "string" ? { uri: enemyImage } : enemyImage
-          }
-          style={styles.enemyImage}
-        />
-      </View>
+        {/* Life and Score */}
+        <View style={styles.infoContainer}>
+          <Life count={life} />
+          <Score score={winCount} />
+        </View>
 
-      {/* Game Area */}
-      <View style={styles.gameArea}>
-        {/* Computer Cards */}
+        {/* Enemy Card Area */}
         <View style={styles.cardContainer}>
-          {playerState === "shuffling" ? (
-            <Image
-              source={require("../assets/miserarenaiyo.jpg")}
-              style={{ width: 100, height: 100 }}
-            />
-          ) : (
-            (computerChoices || []).map((choice, index) => (
-              <View
-                key={index}
-                style={{
-                  opacity:
-                    showResult && showResult.computerIndex === index ? 0 : 1,
-                }}
-              >
-                <JankenCard
-                  choice={choice}
-                  onSwipeUp={() => {}}
-                  onCardPress={() => handleCardPress(choice)}
-                  showResult={showResult}
-                  selectedCard={showDetail ? selectedCard : null}
-                />
-              </View>
-            ))
-          )}
+          <Text style={styles.sectionTitle}>相手 (CPU)</Text>
+          <View style={styles.cardWrapper}>
+            {(computerChoices || []).map((choice, index) => (
+              <JankenCard
+                key={`computer-card-${index}`}
+                choice={choice}
+                onSwipeUp={() => {}}
+                onCardPress={() => handleCardPress(choice)}
+                showResult={showResult}
+                selectedCard={showDetail ? selectedCard : null}
+              />
+            ))}
+          </View>
         </View>
 
         {/* Play Area */}
-        <View style={styles.playArea}>
+        <View style={styles.playAreaContainer}>
           {showResult ? (
             <ResultWindow
               showResult={showResult}
@@ -112,95 +97,92 @@ export default function JankenGame({
           )}
         </View>
 
-        {/* Player Cards */}
+        {/* Player Card Area */}
         <View style={styles.cardContainer}>
-          {(playerChoices || []).map((choice, index) => (
-            <View
-              key={`player-card-${index}-${choice.id}`}
-              ref={(el) => {
-                cardRefs.current[index] = el;
-              }}
-              style={{
-                opacity: showResult && showResult.playerIndex === index ? 0 : 1,
-              }}
-            >
-              <JankenCard
-                choice={choice}
-                onSwipeUp={() => handleSwipeUp(index)}
-                onCardPress={() => !showResult && handleCardPress(choice)}
-                isPlayerHand
-                showResult={showResult}
-              />
-            </View>
-          ))}
+          <Text style={styles.sectionTitle}>あなた</Text>
+          <View style={styles.cardWrapper}>
+            {(playerChoices || []).map((choice, index) => (
+              <View
+                key={`player-card-${index}-${choice.id}`}
+                ref={(el) => {
+                  cardRefs.current[index] = el;
+                }}
+              >
+                <JankenCard
+                  choice={choice}
+                  onSwipeUp={() => handleSwipeUp(index)}
+                  onCardPress={() => !showResult && handleCardPress(choice)}
+                  isPlayerHand
+                  showResult={showResult}
+                />
+              </View>
+            ))}
+          </View>
         </View>
-      </View>
 
-      {showScoreWindow && (
-        <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
-      )}
-    </Pressable>
+        {/* Score Window */}
+        {showScoreWindow && (
+          <ScoreWindow
+            winCount={winCount}
+            closeScoreWindow={closeScoreWindow}
+          />
+        )}
+      </Pressable>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
     flex: 1,
-    position: "relative",
+    padding: 16,
   },
   header: {
-    width: "100%",
-    backgroundColor: "black",
-    color: "white",
-    padding: 10,
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
   },
   headerText: {
-    color: "#fff",
     fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
   },
   infoContainer: {
     flexDirection: "column",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
-    marginVertical: 20,
-  },
-  enemyContainer: {
-    display: "flex",
-    alignItems: "center",
-    margin: 10,
-  },
-  enemyText: {
-    fontWeight: "bold",
-    marginBottom: 20,
-    marginLeft: 5,
-  },
-  enemyImage: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
+    marginBottom: 16,
+    paddingHorizontal: 16,
   },
   cardContainer: {
-    height: "30%",
-    alignItems: "center",
+    marginBottom: 16,
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: "#f9f9f9",
+  },
+  cardWrapper: {
     flexDirection: "row",
     justifyContent: "center",
-    marginVertical: 10,
+    alignItems: "center",
   },
-  gameArea: {
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  playAreaContainer: {
     flex: 1,
-    justifyContent: "space-between",
-  },
-  playArea: {
-    height: "40%", // 固定の高さを確保
+    marginVertical: 16,
     justifyContent: "center",
     alignItems: "center",
-    padding: 10,
-  },
-  playAreaPlaceholder: {
-    width: "100%",
-    height: "100%",
+    borderRadius: 8,
+    backgroundColor: "#f0f0f0",
+    padding: 16,
   },
 });
