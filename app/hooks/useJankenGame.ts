@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChoiceType, choices } from "@/app/types/models";
 import { RootState } from "../stores";
 import {
@@ -11,8 +11,13 @@ import { useDispatch, useSelector } from "react-redux";
 import getRandomChoices from "../lib/get_random_choices";
 import { handlePlayerMove, handleCardChange } from "../stores/gameSlice";
 import { AppDispatch } from "../stores";
+import { Platform, View } from "react-native";
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
+  // Platform
+  const isWeb = Platform.OS === "web";
+
+  // State
   const [showScoreWindow, setShowScoreWindow] = useState<boolean>(false);
   const [showResult, setShowResult] = useState<{
     playerChoice: ChoiceType;
@@ -21,6 +26,17 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     playerIndex: number;
     computerIndex: number;
   } | null>(null);
+  const [enemyImage, setEnemyImage] = useState<string>(
+    require("@assets/robot1_blue.png")
+  );
+  const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
+  const [showDetail, setShowDetail] = useState(false);
+  const [cardPositions, setCardPositions] = useState<{
+    [key: number]: { x: number; y: number };
+  }>({});
+
+  // Redux
+  const dispatch = useDispatch<AppDispatch>();
   const life = useSelector(
     (state: RootState) => state.game.stages[stageId]?.life
   );
@@ -39,10 +55,11 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const playerState = useSelector(
     (state: RootState) => state.game.stages[stageId]?.playerState
   );
-  const [isShuffling, setIsShuffling] = useState<boolean>(false);
-  const [enemyImage, setEnemyImage] = useState<string>(
-    require("@assets/robot1_blue.png")
-  );
+
+  // Refs
+  const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
+
+  // Images
   const enemyImages = [
     require("@assets/robot1_blue.png"),
     require("@assets/robot2_green.png"),
@@ -51,8 +68,8 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot5_red.png"),
     require("@assets/robot6_purple.png"),
   ];
-  const dispatch = useDispatch<AppDispatch>();
 
+  // Functions
   const getRandomEnemyImage = () => {
     const randomImage =
       enemyImages[Math.floor(Math.random() * enemyImages.length)];
@@ -126,7 +143,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
 
     if (showResult?.result) {
-      const result = await dispatch(
+      await dispatch(
         handleCardChange({
           stageId,
           result: showResult.result,
@@ -141,6 +158,71 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
   };
 
+  const updateCardPosition = (index: number) => {
+    if (cardRefs.current[index]) {
+      if (isWeb) {
+        const rect = (
+          cardRefs.current[index] as HTMLDivElement
+        )?.getBoundingClientRect();
+        if (rect) {
+          setCardPositions((prev) => ({
+            ...prev,
+            [index]: {
+              x: rect.x - window.innerWidth / 2,
+              y: rect.y - window.innerHeight / 2,
+            },
+          }));
+        }
+      } else {
+        (cardRefs.current[index] as View)?.measureInWindow(
+          (x, y, width, height) => {
+            setCardPositions((prev) => ({
+              ...prev,
+              [index]: {
+                x: x - width / 2,
+                y: y - height / 2,
+              },
+            }));
+          }
+        );
+      }
+    }
+  };
+
+  const handleCardPress = (choice: ChoiceType) => {
+    if (!showResult && playerState !== "shuffling") {
+      setSelectedCard(choice);
+      setShowDetail(true);
+    }
+  };
+
+  const handleSwipeUp = async (index: number) => {
+    await handlePlayerChoice(index);
+    setShowDetail(false);
+    setSelectedCard(null);
+  };
+
+  const closeCardDetail = () => {
+    setShowDetail(false);
+    setSelectedCard(null);
+  };
+
+  useEffect(() => {
+    const updateAllCardPositions = () => {
+      playerChoices.forEach((_, index) => {
+        updateCardPosition(index);
+      });
+    };
+
+    updateAllCardPositions();
+
+    // リサイズイベントのリスナーを追加
+    if (isWeb) {
+      window.addEventListener("resize", updateAllCardPositions);
+      return () => window.removeEventListener("resize", updateAllCardPositions);
+    }
+  }, [playerChoices]);
+
   return {
     computerChoices,
     playerChoices,
@@ -148,11 +230,17 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     showScoreWindow,
     life,
     winCount,
-    isShuffling,
     enemyImage,
     drawCount,
     playerState,
-    handlePlayerChoice,
+    selectedCard,
+    showDetail,
+    cardPositions,
+    cardRefs,
+    handleSwipeUp,
+    handleCardPress,
+    closeCardDetail,
+    updateCardPosition,
     resetGame,
     closeScoreWindow,
     closeResult,

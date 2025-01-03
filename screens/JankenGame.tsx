@@ -1,13 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
-import {
-  View,
-  Text,
-  Button,
-  Image,
-  StyleSheet,
-  Pressable,
-  Platform,
-} from "react-native";
+import { View, Text, Button, Image, StyleSheet, Pressable } from "react-native";
 import JankenCard from "../components/JankenCard";
 import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
@@ -33,88 +24,17 @@ export default function JankenGame({
     enemyImage,
     drawCount,
     playerState,
-    handlePlayerChoice,
+    selectedCard,
+    showDetail,
+    cardPositions,
+    cardRefs,
     resetGame,
     closeScoreWindow,
     closeResult,
+    closeCardDetail,
+    handleCardPress,
+    handleSwipeUp,
   } = useJankenGame(onBackClick, stageId);
-
-  const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
-  const [showDetail, setShowDetail] = useState(false);
-  const [cardPositions, setCardPositions] = useState<{
-    [key: number]: { x: number; y: number };
-  }>({});
-
-  const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
-
-  const isWeb = Platform.OS === "web";
-
-  const updateCardPosition = (index: number) => {
-    if (cardRefs.current[index]) {
-      if (isWeb) {
-        const rect = (
-          cardRefs.current[index] as HTMLDivElement
-        )?.getBoundingClientRect();
-        if (rect) {
-          setCardPositions((prev) => ({
-            ...prev,
-            [index]: {
-              x: rect.x - window.innerWidth / 2,
-              y: rect.y - window.innerHeight / 2,
-            },
-          }));
-        }
-      } else {
-        (cardRefs.current[index] as View)?.measureInWindow(
-          (x, y, width, height) => {
-            setCardPositions((prev) => ({
-              ...prev,
-              [index]: {
-                x: x - width / 2,
-                y: y - height / 2,
-              },
-            }));
-          }
-        );
-      }
-    }
-  };
-
-
-
-  useEffect(() => {
-    const updateAllCardPositions = () => {
-      playerChoices.forEach((_, index) => {
-        updateCardPosition(index);
-      });
-    };
-
-    updateAllCardPositions();
-
-    // リサイズイベントのリスナーを追加
-    if (isWeb) {
-      window.addEventListener("resize", updateAllCardPositions);
-      return () => window.removeEventListener("resize", updateAllCardPositions);
-    }
-  }, [playerChoices]);
-
-  const handleCardPress = (choice: ChoiceType) => {
-    if (!showResult && playerState !== 'shuffling') {
-      setSelectedCard(choice);
-      setShowDetail(true);
-    }
-  };
-
-  const handleSwipeUp = async (index: number) => {
-    await handlePlayerChoice(index);
-    setShowDetail(false);
-    setSelectedCard(null);
-  };
-
-  const closeCardDetail = () => {
-    setShowDetail(false);
-    setSelectedCard(null);
-  };
 
   return (
     <Pressable style={styles.container} onPress={() => {}}>
@@ -215,7 +135,7 @@ export default function JankenGame({
       {/* Player Info */}
       <View style={styles.playerContainer}>
         <Text style={styles.playerText}>
-          {life > 0 ?? Array(life).fill('❤️').join('')}
+          {life > 0 ? Array(life).fill("❤️").join("") : ""}
         </Text>
         <Text style={styles.playerText}>⭐️ {winCount}</Text>
       </View>
