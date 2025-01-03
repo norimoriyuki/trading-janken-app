@@ -163,7 +163,6 @@ export default function JankenCard({
         <View style={styles.imageWrapper}>
           <Image source={imageSource} style={styles.image} />
         </View>
-        {/* <Text style={styles.cardText}>{choice.name}</Text> */}
         {resultText && (
           <View style={styles.resultTextWrapper}>
             <Text style={styles.resultText}>{resultText}</Text>

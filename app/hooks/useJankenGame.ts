@@ -35,6 +35,19 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     [key: number]: { x: number; y: number };
   }>({});
 
+  // Overlay State
+  const [isResultVisible, setIsResultVisible] = useState(false);
+  const [isTradeVisible, setIsTradeVisible] = useState(false);
+  const [overlayData, setOverlayData] = useState<{
+    result: "win" | "lose" | "draw" | null;
+    playerCard: ChoiceType | null;
+    computerCard: ChoiceType | null;
+  }>({
+    result: null,
+    playerCard: null,
+    computerCard: null,
+  });
+
   // Redux
   const dispatch = useDispatch<AppDispatch>();
   const life = useSelector(
@@ -85,7 +98,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
 
     try {
-      console.log("Dispatching handlePlayerMove");
       const result = await dispatch(
         handlePlayerMove({ playerIndex, stageId })
       ).unwrap();
@@ -103,6 +115,22 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           resolve(true);
         }),
       ]);
+
+      // 結果を表示
+      setOverlayData({
+        result: result.result,
+        playerCard: result.playerChoice,
+        computerCard: result.computerChoice,
+      });
+      setIsResultVisible(true);
+
+      setShowResult({
+        playerChoice: result.playerChoice,
+        computerChoice: result.computerChoice,
+        result: result.result,
+        playerIndex: playerIndex,
+        computerIndex: result.computerIndex,
+      });
 
       return result;
     } catch (error) {
@@ -128,6 +156,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   };
 
   const closeResult = async () => {
+    setIsResultVisible(false);
     setShowResult(null);
     if (life === 0) {
       setShowScoreWindow(true);
@@ -155,6 +184,25 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           drawCount,
         })
       ).unwrap();
+    }
+  };
+
+  const showTradeOverlay = (
+    playerCard: ChoiceType,
+    computerCard: ChoiceType
+  ) => {
+    setOverlayData({ result: null, playerCard, computerCard });
+    setIsTradeVisible(true);
+  };
+
+  const closeTradeOverlay = () => {
+    setIsTradeVisible(false);
+  };
+
+  const handleCardPress = (choice: ChoiceType) => {
+    if (!showResult && playerState !== "shuffling") {
+      setSelectedCard(choice);
+      setShowDetail(true);
     }
   };
 
@@ -186,13 +234,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           }
         );
       }
-    }
-  };
-
-  const handleCardPress = (choice: ChoiceType) => {
-    if (!showResult && playerState !== "shuffling") {
-      setSelectedCard(choice);
-      setShowDetail(true);
     }
   };
 
@@ -240,9 +281,13 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     handleSwipeUp,
     handleCardPress,
     closeCardDetail,
-    updateCardPosition,
     resetGame,
     closeScoreWindow,
     closeResult,
+    showTradeOverlay,
+    closeTradeOverlay,
+    isResultVisible,
+    isTradeVisible,
+    overlayData,
   };
 };

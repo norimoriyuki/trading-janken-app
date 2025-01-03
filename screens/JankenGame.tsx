@@ -15,6 +15,8 @@ import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
 import Life from "@/components/Life";
 import Score from "@/components/Score";
+import ResultOverlay from "@/components/ResultOverlay";
+import TradeOverlay from "@/components/TradeOverlay";
 
 export default function JankenGame({
   onBackClick,
@@ -30,9 +32,7 @@ export default function JankenGame({
     showScoreWindow,
     life,
     winCount,
-    enemyImage,
     drawCount,
-    playerState,
     selectedCard,
     showDetail,
     cardPositions,
@@ -43,6 +43,11 @@ export default function JankenGame({
     closeCardDetail,
     handleCardPress,
     handleSwipeUp,
+    showTradeOverlay,
+    closeTradeOverlay,
+    isResultVisible,
+    isTradeVisible,
+    overlayData,
   } = useJankenGame(onBackClick, stageId);
 
   return (
@@ -127,6 +132,18 @@ export default function JankenGame({
             closeScoreWindow={closeScoreWindow}
           />
         )}
+
+        <ResultOverlay
+          isVisible={isResultVisible}
+          overlayData={overlayData}
+          onClose={closeResult}
+        />
+
+        <TradeOverlay
+          isVisible={isTradeVisible}
+          overlayData={overlayData}
+          onClose={closeTradeOverlay}
+        />
       </Pressable>
     </SafeAreaView>
   );
