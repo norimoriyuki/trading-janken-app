@@ -1,20 +1,16 @@
 import { Image, View, Text, Pressable, PanResponder, Animated } from "react-native";
 import { useRef } from 'react';
 import { ChoiceType } from "../app/types/models";
+import getResult from "../app/lib/get_result";
 
 interface JankenCardProps {
-  choice: {
-    name: string;
-    img: string;
-    description: string;
-    type: string;
-    level: number;
-  };
+  choice: ChoiceType;
   onSwipeUp: () => void;
   onCardPress: () => void;
   isPlayerHand?: boolean;
   className?: string;
   showResult: { playerChoice: ChoiceType; computerChoice: ChoiceType; result: string; } | null;
+  selectedCard?: ChoiceType | null;
 }
 
 const adjustColorBrightness = (color: string): string => {
@@ -37,6 +33,7 @@ export default function JankenCard({
   isPlayerHand = false,
   className = "",
   showResult,
+  selectedCard,
 }: JankenCardProps) {
   const isSwipingRef = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
@@ -88,6 +85,26 @@ export default function JankenCard({
   const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img || require("@assets/zari.png");
 
+  const getBorderColor = () => {
+    if (!selectedCard || isPlayerHand) return borderColor;
+    
+    if (getResult(selectedCard, choice) === "win") {
+      return "rgb(0, 255, 0)";
+    } else if (getResult(selectedCard, choice) === "lose") {
+      return "rgb(255, 0, 0)";
+    }
+    return borderColor;
+  };
+
+  const getBorderWidth = () => {
+    if (!selectedCard || isPlayerHand) return 2;
+    
+    if (getResult(selectedCard, choice) === "win" || getResult(choice, selectedCard) === "win") {
+      return 4;
+    }
+    return 2;
+  };
+
   return (
     <Animated.View
       {...(showResult === null ? panResponder.panHandlers : {})}
@@ -101,8 +118,8 @@ export default function JankenCard({
         style={{
           margin: 16,
           padding: 16,
-          borderWidth: 2,
-          borderColor: borderColor,
+          borderWidth: getBorderWidth(),
+          borderColor: getBorderColor(),
           borderRadius: 16,
           backgroundColor: "#f9f9f9",
           width: 80,
