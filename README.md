@@ -1,50 +1,50 @@
-# Welcome to your Expo app 👋
+# Trading Janken App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-
-## Get started
-
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+## 起動方法
+```
+yarn install
+yarn start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 環境構築
+### リポジトリのclone
+```
+# 指定のディレクトリに移動
+git clone https://github.com/norimoriyuki/trading-janken-app.git
+```
 
-## Learn more
+### homebrewのインストール
+homebrewインストールされていない向け、されている場合はスキップ
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+brew -v # バージョンが表示されれば導入済みなので、スキップ
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew -v # バージョンが表示されればOK
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### nodeのインストール
+nodeインストールされていない向け、されている場合はスキップ
 
-## Join the community
+```
+node -v # バージョンが表示されれば導入済みなので、スキップ
+brew install node
+node -v # バージョンが表示されればOK
+```
 
-Join our community of developers creating universal apps.
+## 推奨プログラミング環境
+### Cursor
+- [インストール方法](https://www.cursor.com/)
+- ([brewでもinstallできるよ](https://formulae.brew.sh/cask/cursor))
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### [Justfile](https://github.com/casey/just)
+- Makefileみたいなもの
+- [インストール方法](https://zenn.dev/carenet/articles/2e0bfc9cfb4e47#justfile%E3%81%AE%E3%82%A4%E3%83%B3%E3%82%B9%E3%83%88%E3%83%BC%E3%83%AB)
+- 使い方
+  - `just` でヘルプ表示
+  - `just r` で実行(`yarn start`)
+  - その他は[Justfile](Justfile)を参照
+
+#### 参考
+- [公式？](https://just.systems/man/en/introduction.html)
+- [Rustエンジニアの救世主：justfileによる開発プロセス自動化の極意](https://zenn.dev/carenet/articles/2e0bfc9cfb4e47)
+- [makeに変わるタスクランナーとしてjustとtaskを比較してみたら](https://zenn.dev/harupong/articles/745f430afbc67e)
