@@ -47,6 +47,8 @@ export default function JankenGame({
 
   const cardRefs = useRef<(View | HTMLDivElement | null)[]>([]);
 
+  const isWeb = Platform.OS === "web";
+
   const updateCardPosition = (index: number) => {
     if (cardRefs.current[index]) {
       if (isWeb) {
@@ -63,13 +65,13 @@ export default function JankenGame({
           }));
         }
       } else {
-        (cardRefs.current[index] as View)?.measure(
-          (x, y, width, height, pageX, pageY) => {
+        (cardRefs.current[index] as View)?.measureInWindow(
+          (x, y, width, height) => {
             setCardPositions((prev) => ({
               ...prev,
               [index]: {
-                x: pageX - width / 2,
-                y: pageY - height / 2,
+                x: x - width / 2,
+                y: y - height / 2,
               },
             }));
           }
@@ -78,8 +80,7 @@ export default function JankenGame({
     }
   };
 
-  // プラットフォーム判定
-  const isWeb = Platform.OS === "web";
+
 
   useEffect(() => {
     const updateAllCardPositions = () => {
@@ -98,8 +99,7 @@ export default function JankenGame({
   }, [playerChoices]);
 
   const handleCardPress = (choice: ChoiceType) => {
-    if (!showResult) {
-      // リザルト表示中は詳細を表示しない
+    if (!showResult && playerState !== 'shuffling') {
       setSelectedCard(choice);
       setShowDetail(true);
     }
@@ -159,8 +159,9 @@ export default function JankenGame({
                 <JankenCard
                   choice={choice}
                   onSwipeUp={() => {}}
-                  onCardPress={() => !showResult && handleCardPress(choice)}
+                  onCardPress={() => handleCardPress(choice)}
                   showResult={showResult}
+                  selectedCard={showDetail ? selectedCard : null}
                 />
               </View>
             ))
@@ -191,7 +192,7 @@ export default function JankenGame({
         <View style={styles.cardContainer}>
           {(playerChoices || []).map((choice, index) => (
             <View
-              key={index}
+              key={`player-card-${index}-${choice.id}`}
               ref={(el) => {
                 cardRefs.current[index] = el;
               }}
@@ -202,7 +203,7 @@ export default function JankenGame({
               <JankenCard
                 choice={choice}
                 onSwipeUp={() => handleSwipeUp(index)}
-                onCardPress={() => handleCardPress(choice)}
+                onCardPress={() => !showResult && handleCardPress(choice)}
                 isPlayerHand
                 showResult={showResult}
               />
@@ -213,9 +214,10 @@ export default function JankenGame({
 
       {/* Player Info */}
       <View style={styles.playerContainer}>
-        <Text style={styles.playerText}>ライフ: {life}</Text>
-        <Text style={styles.playerText}>勝利数: {winCount}</Text>
-        <Text style={styles.playerText}>引き分け: {drawCount}</Text>
+        <Text style={styles.playerText}>
+          {life > 0 ?? Array(life).fill('❤️').join('')}
+        </Text>
+        <Text style={styles.playerText}>⭐️ {winCount}</Text>
       </View>
 
       {showScoreWindow && (
@@ -266,19 +268,16 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   playerContainer: {
-    marginTop: 20,
-    alignItems: "center",
-    transform: [{ translateX: -50 }],
-  },
-  playerImage: {
-    width: "20%",
-    height: "15%",
-    resizeMode: "contain",
+    marginTop: 40,
+    marginBottom: 10,
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 20,
   },
   playerInfo: {
     borderLeftWidth: 0,
     paddingLeft: 30,
-    marginLeft: -20,
     color: "black",
     width: 100,
     textAlign: "left",
@@ -287,25 +286,6 @@ const styles = StyleSheet.create({
   playerText: {
     fontSize: 16,
     fontWeight: "bold",
-  },
-  lifeContainer: {
-    margin: -5,
-  },
-  winContainer: {
-    margin: -5,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    maxWidth: "80%",
-    textAlign: "center",
   },
   gameArea: {
     flex: 1,
