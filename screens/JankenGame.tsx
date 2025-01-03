@@ -5,6 +5,9 @@ import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import { ChoiceType } from "../app/types/models";
 import CardDetailWindow from "../components/CardDetailWindow";
+import Life from "@/components/Life";
+import Score from "@/components/Score";
+import React from "react";
 
 export default function JankenGame({
   onBackClick,
@@ -38,13 +41,14 @@ export default function JankenGame({
 
   return (
     <Pressable style={styles.container} onPress={() => {}}>
-      <View>
-        <Text>Player State: {playerState}</Text>
-      </View>
       {/* Header */}
       <View style={styles.header}>
         <Button title="降参" onPress={resetGame} />
         <Text style={styles.headerText}>Trading Janken</Text>
+      </View>
+      <View style={styles.infoContainer}>
+        <Life count={life} />
+        <Score score={winCount} />
       </View>
 
       {/* Enemy Section */}
@@ -132,14 +136,6 @@ export default function JankenGame({
         </View>
       </View>
 
-      {/* Player Info */}
-      <View style={styles.playerContainer}>
-        <Text style={styles.playerText}>
-          {life > 0 ? Array(life).fill("❤️").join("") : ""}
-        </Text>
-        <Text style={styles.playerText}>⭐️ {winCount}</Text>
-      </View>
-
       {showScoreWindow && (
         <ScoreWindow winCount={winCount} closeScoreWindow={closeScoreWindow} />
       )}
@@ -165,6 +161,12 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
   },
+  infoContainer: {
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 20,
+  },
   enemyContainer: {
     display: "flex",
     alignItems: "center",
@@ -186,26 +188,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     marginVertical: 10,
-  },
-  playerContainer: {
-    marginTop: 40,
-    marginBottom: 10,
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 20,
-  },
-  playerInfo: {
-    borderLeftWidth: 0,
-    paddingLeft: 30,
-    color: "black",
-    width: 100,
-    textAlign: "left",
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-  },
-  playerText: {
-    fontSize: 16,
-    fontWeight: "bold",
   },
   gameArea: {
     flex: 1,
