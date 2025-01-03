@@ -11,7 +11,7 @@ const JankenGame = () => {
 
   return (
     <Provider store={store}>
-      <JankenGameScreen onBackClick={() => navigation.goBack()} playerChoices={[]} stageId={stageId} />
+      <JankenGameScreen onBackClick={() => navigation.goBack()} stageId={stageId} />
     </Provider>
   );
 };
