@@ -264,6 +264,10 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
   }, [playerChoices]);
 
+  useEffect(() => {
+    setIsTradeVisible(playerState === "shuffling");
+  }, [playerState]);
+
   return {
     computerChoices,
     playerChoices,

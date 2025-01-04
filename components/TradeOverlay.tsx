@@ -15,7 +15,7 @@ const TradeOverlay = ({ isVisible, overlayData, onClose }: TradeOverlayProps) =>
   if (!isVisible || !overlayData.playerCard || !overlayData.computerCard) return null;
 
   return (
-    <Modal transparent={true} visible={isVisible} animationType="slide">
+    <Modal transparent={false} visible={isVisible} animationType="none">
       <View style={styles.overlay}>
         <View style={styles.content}>
           <Text style={styles.tradeLabel}>カードトレード</Text>
