@@ -17,6 +17,7 @@ import Life from "@/components/Life";
 import Score from "@/components/Score";
 import ResultOverlay from "@/components/ResultOverlay";
 import TradeOverlay from "@/components/TradeOverlay";
+import DragCardPlaceholder from "@/components/DragCardPlaceholder";
 
 export default function JankenGame({
   onBackClick,
@@ -91,14 +92,10 @@ export default function JankenGame({
               drawCount={drawCount}
               startPosition={cardPositions[showResult.playerIndex]}
             />
+          ) : showDetail && selectedCard ? (
+            <CardDetailWindow choice={selectedCard} onClose={closeCardDetail} />
           ) : (
-            showDetail &&
-            selectedCard && (
-              <CardDetailWindow
-                choice={selectedCard}
-                onClose={closeCardDetail}
-              />
-            )
+            <DragCardPlaceholder />
           )}
         </View>
 
