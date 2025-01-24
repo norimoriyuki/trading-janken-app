@@ -13,11 +13,10 @@ import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
-import Life from "@/components/Life";
-import Score from "@/components/Score";
 import ResultOverlay from "@/components/ResultOverlay";
 import TradeOverlay from "@/components/TradeOverlay";
 import DragCardPlaceholder from "@/components/DragCardPlaceholder";
+import GameStatus from "../components/GameStatus";
 
 export default function JankenGame({
   onBackClick,
@@ -75,8 +74,7 @@ export default function JankenGame({
 
         {/* Life and Score */}
         <View style={styles.infoContainer}>
-          <Life count={life} />
-          <Score score={winCount} />
+          <GameStatus life={life} score={winCount} />
         </View>
 
         {/* Enemy Card Area */}
@@ -201,10 +199,10 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginBottom: 16,
     paddingHorizontal: 16,
+    width: "100%",
   },
   cardContainer: {
     marginBottom: 16,

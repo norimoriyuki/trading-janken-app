@@ -14,11 +14,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    width: "100%",
   },
   label: {
     fontSize: 20,
     marginRight: 5,
+    width: 50,
   },
   score: {
     fontSize: 18,
