@@ -56,8 +56,21 @@ export default function JankenGame({
       <Pressable style={styles.container} onPress={() => {}}>
         {/* Header */}
         <View style={styles.header}>
-          <Button title="降参" onPress={resetGame} />
-          <Text style={styles.headerText}>Trading Janken</Text>
+          <Pressable 
+            style={styles.closeButton} 
+            onPress={resetGame}
+          >
+            <Image 
+              source={require("@/assets/closeButton.png")} 
+              style={styles.closeIcon} 
+            />
+          </Pressable>
+          <Pressable 
+            style={styles.ruleButton} 
+            onPress={() => {/* ルールを表示する処理 aaa*/}}
+          >
+            <Text style={styles.ruleButtonText}>ルール</Text>
+          </Pressable>
         </View>
 
         {/* Life and Score */}
@@ -160,11 +173,31 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    backgroundColor: "#000",
+    padding: 16,
+    borderRadius: 8,
   },
-  headerText: {
-    fontSize: 18,
+  closeButton: {
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeIcon: {
+    width: "100%",
+    height: "100%",
+  },
+  ruleButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#fff",
+  },
+  ruleButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#000",
   },
   infoContainer: {
     flexDirection: "column",
