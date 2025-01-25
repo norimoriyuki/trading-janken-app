@@ -54,83 +54,87 @@ export default function JankenGame({
     <SafeAreaView style={styles.safeArea}>
       <Pressable style={styles.container} onPress={() => {}}>
         {/* Header */}
-        <View style={styles.header}>
-          <Pressable 
-            style={styles.closeButton} 
-            onPress={resetGame}
-          >
-            <Image 
-              source={require("@/assets/closeButton.png")} 
-              style={styles.closeIcon} 
-            />
-          </Pressable>
-          <Pressable 
-            style={styles.ruleButton} 
-            onPress={() => {/* ルールを表示する処理 aaa*/}}
-          >
-            <Text style={styles.ruleButtonText}>ルール</Text>
-          </Pressable>
+        <View style={styles.mainContent}>
+          <View style={styles.header}>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={resetGame}
+            >
+              <Image 
+                source={require("@/assets/closeButton.png")} 
+                style={styles.closeIcon} 
+              />
+            </Pressable>
+            <Pressable 
+              style={styles.ruleButton} 
+              onPress={() => {/* ルールを表示する処理 aaa*/}}
+            >
+              <Text style={styles.ruleButtonText}>ルール</Text>
+            </Pressable>
+          </View>
+
+          {/* Enemy Card Area */}
+          <View style={styles.cardContainer}>
+            <View style={styles.cardWrapper}>
+              {(computerChoices || []).map((choice, index) => (
+                <JankenCard
+                  key={`computer-card-${index}`}
+                  choice={choice}
+                  onSwipeUp={() => {}}
+                  onCardPress={() => handleCardPress(choice)}
+                  showResult={showResult}
+                  selectedCard={showDetail ? selectedCard : null}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Play Area */}
+          <View style={styles.playAreaContainer}>
+            {showResult ? (
+              <ResultWindow
+                showResult={showResult}
+                closeResult={closeResult}
+                drawCount={drawCount}
+                startPosition={cardPositions[showResult.playerIndex]}
+              />
+            ) : showDetail && selectedCard ? (
+              <CardDetailWindow choice={selectedCard} onClose={closeCardDetail} />
+            ) : (
+              <View style={styles.vsContainer}>
+                <View style={styles.horizontalLine} />
+                <Text style={styles.vsText}>VS</Text>
+                <View style={styles.horizontalLine} />
+              </View>
+            )}
+          </View>
+
+          {/* Player Card Area */}
+          <View style={styles.cardContainer}>
+            <View style={styles.cardWrapper}>
+              {(playerChoices || []).map((choice, index) => (
+                <View
+                  key={`player-card-${index}-${choice.id}`}
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                >
+                  <JankenCard
+                    choice={choice}
+                    onSwipeUp={() => handleSwipeUp(index)}
+                    onCardPress={() => !showResult && handleCardPress(choice)}
+                    isPlayerHand
+                    showResult={showResult}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* Life and Score */}
         <View style={styles.infoContainer}>
           <GameStatus life={life} score={winCount} />
-        </View>
-
-        {/* Enemy Card Area */}
-        <View style={styles.cardContainer}>
-          <Text style={styles.sectionTitle}>相手 (CPU)</Text>
-          <View style={styles.cardWrapper}>
-            {(computerChoices || []).map((choice, index) => (
-              <JankenCard
-                key={`computer-card-${index}`}
-                choice={choice}
-                onSwipeUp={() => {}}
-                onCardPress={() => handleCardPress(choice)}
-                showResult={showResult}
-                selectedCard={showDetail ? selectedCard : null}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Play Area */}
-        <View style={styles.playAreaContainer}>
-          {showResult ? (
-            <ResultWindow
-              showResult={showResult}
-              closeResult={closeResult}
-              drawCount={drawCount}
-              startPosition={cardPositions[showResult.playerIndex]}
-            />
-          ) : showDetail && selectedCard ? (
-            <CardDetailWindow choice={selectedCard} onClose={closeCardDetail} />
-          ) : (
-            <DragCardPlaceholder />
-          )}
-        </View>
-
-        {/* Player Card Area */}
-        <View style={styles.cardContainer}>
-          <Text style={styles.sectionTitle}>あなた</Text>
-          <View style={styles.cardWrapper}>
-            {(playerChoices || []).map((choice, index) => (
-              <View
-                key={`player-card-${index}-${choice.id}`}
-                ref={(el) => {
-                  cardRefs.current[index] = el;
-                }}
-              >
-                <JankenCard
-                  choice={choice}
-                  onSwipeUp={() => handleSwipeUp(index)}
-                  onCardPress={() => !showResult && handleCardPress(choice)}
-                  isPlayerHand
-                  showResult={showResult}
-                />
-              </View>
-            ))}
-          </View>
         </View>
 
         {/* Score Window */}
@@ -164,7 +168,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 16,
+    justifyContent: 'space-between',
+    backgroundColor: "#F5F5F5",
+  },
+  mainContent: {
+    flex: 1,
   },
   header: {
     flexDirection: "row",
@@ -198,17 +206,14 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   infoContainer: {
-    flexDirection: "column",
-    alignItems: "flex-start",
-    marginBottom: 16,
+    width: '100%',
     paddingHorizontal: 16,
-    width: "100%",
+    margin: 0,
   },
   cardContainer: {
     marginBottom: 16,
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "#F5F5F5",
   },
   cardWrapper: {
     flexDirection: "row",
@@ -227,7 +232,24 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#F5F5F5",
     padding: 16,
+  },
+  vsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  horizontalLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(195, 195, 195, 0.30)',
+  },
+  vsText: {
+    color: 'rgba(195, 195, 195, 0.30)',
+    fontFamily: 'Noto Sans',
+    fontSize: 52.397,
+    fontWeight: '700',
+    marginHorizontal: 16,
   },
 });

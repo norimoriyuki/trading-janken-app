@@ -6,6 +6,7 @@ import {
   PanResponder,
   Animated,
   StyleSheet,
+  Dimensions,
 } from "react-native";
 import { useRef } from "react";
 import { ChoiceType } from "../app/types/models";
@@ -37,6 +38,10 @@ const adjustColorBrightness = (color: string): string => {
     g * brightnessAdjustment
   )}, ${Math.floor(b * brightnessAdjustment)})`;
 };
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.25;
+const CARD_HEIGHT = CARD_WIDTH * 1.75;
 
 export default function JankenCard({
   choice,
@@ -175,12 +180,12 @@ export default function JankenCard({
 
 const styles = StyleSheet.create({
   card: {
-    margin: 16,
-    padding: 16,
+    margin: 8,
+    padding: 8,
     borderRadius: 16,
     backgroundColor: "#fff",
-    width: 80,
-    height: 140,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -192,20 +197,21 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1.847 },
     shadowOpacity: 0.25,
     shadowRadius: 7.39,
-    elevation: 7.39, // Android 用
+    elevation: 7.39,
   },
   imageWrapper: {
     position: "relative",
-    width: 80,
-    height: 80,
+    width: CARD_WIDTH * 0.8,
+    height: CARD_WIDTH * 0.8,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
   image: {
-    width: 80,
-    height: 80,
-    resizeMode: "contain",
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   cardText: {
     marginTop: 8,
