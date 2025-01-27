@@ -15,7 +15,6 @@ import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
 import ResultOverlay from "@/components/ResultOverlay";
 import TradeOverlay from "@/components/TradeOverlay";
-import DragCardPlaceholder from "@/components/DragCardPlaceholder";
 import GameStatus from "../components/GameStatus";
 
 export default function JankenGame({
@@ -37,6 +36,7 @@ export default function JankenGame({
     showDetail,
     cardPositions,
     cardRefs,
+    selectedCardOwner,
     resetGame,
     closeScoreWindow,
     closeResult,
@@ -45,6 +45,7 @@ export default function JankenGame({
     handleSwipeUp,
     showTradeOverlay,
     closeTradeOverlay,
+    setSelectedCardOwner,
     isResultVisible,
     isTradeVisible,
     overlayData,
@@ -74,16 +75,23 @@ export default function JankenGame({
           </View>
 
           {/* Enemy Card Area */}
-          <View style={styles.cardContainer}>
+          <View style={[
+            styles.cardContainer,
+            showDetail && selectedCard && selectedCardOwner === 'computer' && styles.hideContainer
+          ]}>
             <View style={styles.cardWrapper}>
               {(computerChoices || []).map((choice, index) => (
                 <JankenCard
                   key={`computer-card-${index}`}
                   choice={choice}
                   onSwipeUp={() => {}}
-                  onCardPress={() => handleCardPress(choice)}
+                  onCardPress={() => {
+                    handleCardPress(choice);
+                    setSelectedCardOwner('computer');
+                  }}
                   showResult={showResult}
                   selectedCard={showDetail ? selectedCard : null}
+                  hide={showDetail && selectedCard && selectedCardOwner === 'computer'}
                 />
               ))}
             </View>
@@ -99,7 +107,12 @@ export default function JankenGame({
                 startPosition={cardPositions[showResult.playerIndex]}
               />
             ) : showDetail && selectedCard ? (
-              <CardDetailWindow choice={selectedCard} onClose={closeCardDetail} />
+              <CardDetailWindow 
+                choice={selectedCard} 
+                onClose={closeCardDetail}
+                isPlayerCard={selectedCardOwner === 'player'}
+                style={selectedCardOwner === 'player' ? styles.playerDetailPosition : styles.enemyDetailPosition}
+              />
             ) : (
               <View style={styles.vsContainer}>
                 <View style={styles.horizontalLine} />
@@ -110,7 +123,10 @@ export default function JankenGame({
           </View>
 
           {/* Player Card Area */}
-          <View style={styles.cardContainer}>
+          <View style={[
+            styles.cardContainer, 
+            showDetail && selectedCard && selectedCardOwner === 'player' && styles.hideContainer
+          ]}>
             <View style={styles.cardWrapper}>
               {(playerChoices || []).map((choice, index) => (
                 <View
@@ -122,9 +138,15 @@ export default function JankenGame({
                   <JankenCard
                     choice={choice}
                     onSwipeUp={() => handleSwipeUp(index)}
-                    onCardPress={() => !showResult && handleCardPress(choice)}
+                    onCardPress={() => {
+                      if (!showResult) {
+                        handleCardPress(choice);
+                        setSelectedCardOwner('player');
+                      }
+                    }}
                     isPlayerHand
                     showResult={showResult}
+                    hide={showDetail && selectedCard && selectedCardOwner === 'player'}
                   />
                 </View>
               ))}
@@ -168,11 +190,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     backgroundColor: "#F5F5F5",
   },
   mainContent: {
     flex: 1,
+    flexDirection: 'column',
   },
   header: {
     flexDirection: "row",
@@ -211,7 +234,7 @@ const styles = StyleSheet.create({
     margin: 0,
   },
   cardContainer: {
-    marginBottom: 16,
+    height: '35%',  // 固定の高さを設定
     padding: 16,
     borderRadius: 8,
   },
@@ -227,7 +250,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   playAreaContainer: {
-    flex: 1,
+    flex: 1,        // 残りのスペースを使用
     marginVertical: 16,
     justifyContent: "center",
     alignItems: "center",
@@ -251,5 +274,22 @@ const styles = StyleSheet.create({
     fontSize: 52.397,
     fontWeight: '700',
     marginHorizontal: 16,
+  },
+  playerDetailPosition: {
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '65%',  // enemy cards以外の部分を使用
+  },
+  enemyDetailPosition: {
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '65%',  // player cards以外の部分を使用
+  },
+  hideContainer: {
+    height: 0,
+    padding: 0,
+    margin: 0,
   },
 });

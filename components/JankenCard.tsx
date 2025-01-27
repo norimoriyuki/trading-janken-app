@@ -24,6 +24,7 @@ interface JankenCardProps {
     result: string;
   } | null;
   selectedCard?: ChoiceType | null;
+  hide?: boolean;
 }
 
 const adjustColorBrightness = (color: string): string => {
@@ -43,7 +44,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH * 0.25;
 const CARD_HEIGHT = CARD_WIDTH * 1.75;
 
-export default function JankenCard({
+const JankenCard: React.FC<JankenCardProps> = ({
   choice,
   onSwipeUp,
   onCardPress,
@@ -51,7 +52,10 @@ export default function JankenCard({
   className = "",
   showResult,
   selectedCard,
-}: JankenCardProps) {
+  hide = false,
+}) => {
+  if (hide) return null;
+
   const isSwipingRef = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
 
@@ -176,7 +180,7 @@ export default function JankenCard({
       </Pressable>
     </Animated.View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
@@ -193,11 +197,14 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     opacity: 1,
-    shadowColor: "rgba(0, 0, 0, 0.25)",
-    shadowOffset: { width: 0, height: 1.847 },
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.25,
-    shadowRadius: 7.39,
-    elevation: 7.39,
+    shadowRadius: 8,
+    elevation: 5,
   },
   imageWrapper: {
     position: "relative",
@@ -233,3 +240,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default JankenCard;

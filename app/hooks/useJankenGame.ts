@@ -30,6 +30,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot1_blue.png")
   );
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
+  const [selectedCardOwner, setSelectedCardOwner] = useState<"player" | "computer" | null>(null);
   const [showDetail, setShowDetail] = useState(false);
   const [cardPositions, setCardPositions] = useState<{
     [key: number]: { x: number; y: number };
@@ -282,6 +283,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     showDetail,
     cardPositions,
     cardRefs,
+    selectedCardOwner,
     handleSwipeUp,
     handleCardPress,
     closeCardDetail,
@@ -290,6 +292,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     closeResult,
     showTradeOverlay,
     closeTradeOverlay,
+    setSelectedCardOwner,
     isResultVisible,
     isTradeVisible,
     overlayData,
