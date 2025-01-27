@@ -110,6 +110,7 @@ export default function JankenGame({
               <CardDetailWindow 
                 choice={selectedCard} 
                 onClose={closeCardDetail}
+                onPlay={() => handleSwipeUp(playerChoices.indexOf(selectedCard))}
                 isPlayerCard={selectedCardOwner === 'player'}
                 style={selectedCardOwner === 'player' ? styles.playerDetailPosition : styles.enemyDetailPosition}
               />

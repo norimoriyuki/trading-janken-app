@@ -4,7 +4,6 @@ import {
   Text,
   TouchableWithoutFeedback,
   StyleSheet,
-  Dimensions,
   Image,
   Pressable,
   StyleProp,
@@ -15,11 +14,12 @@ import { ChoiceType } from '@/app/types/models';
 interface CardDetailWindowProps {
   choice: ChoiceType;
   onClose: () => void;
+  onPlay: () => void;
   isPlayerCard?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-const CardDetailWindow: React.FC<CardDetailWindowProps> = ({ choice, onClose, isPlayerCard, style }) => {
+const CardDetailWindow: React.FC<CardDetailWindowProps> = ({ choice, onClose, onPlay, isPlayerCard, style }) => {
   return (
     <TouchableWithoutFeedback onPress={onClose}>
       <View style={[styles.detailWindow, style]}>
@@ -32,7 +32,7 @@ const CardDetailWindow: React.FC<CardDetailWindowProps> = ({ choice, onClose, is
         
         <View style={styles.buttonContainer}>
         {isPlayerCard && (
-            <Pressable style={styles.playButton} onPress={onClose}>
+            <Pressable style={styles.playButton} onPress={onPlay}>
               <Text style={styles.playButtonText}>プレイ</Text>
             </Pressable>
           )}
