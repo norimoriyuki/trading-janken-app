@@ -41,48 +41,73 @@ const ResultOverlay = ({
 
   return (
     <Modal transparent={true} visible={isVisible} animationType="fade">
-      <View style={styles.overlay}>
-        <View style={styles.circleContainer}>
-          {/* 相手のカード */}
-          <View style={[styles.circle, styles.topCircle]}>
-            <Text style={styles.label}>相手 (CPU)</Text>
-            {overlayData.computerCard && (
-              <Image
-                source={overlayData.computerCard.img}
-                style={styles.cardImage}
-              />
-            )}
-          </View>
+      <Pressable style={styles.overlay} onPress={onClose}>
+        <View style={styles.container}>
+          {/* 背景の円 */}
+          <View style={[
+            styles.circle,
+            styles.topCircle,
+            overlayData.result === "win" 
+              ? styles.darkCircle 
+              : overlayData.result === "lose" 
+                ? styles.redCircle 
+                : styles.darkCircle
+          ]} />
+          <View style={[
+            styles.circle,
+            styles.bottomCircle,
+            overlayData.result === "win" 
+              ? styles.redCircle 
+              : overlayData.result === "lose" 
+                ? styles.darkCircle 
+                : styles.darkCircle
+          ]} />
 
-          {/* 結果 */}
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultText}>
-              {overlayData.result === "win"
-                ? "WIN!"
-                : overlayData.result === "lose"
-                ? "LOSE..."
-                : "あいこ"}
-            </Text>
-            <Text style={styles.pointText}>{getResultText()}</Text>
-          </View>
+          {/* コンテンツ */}
+          <View style={styles.content}>
+            {/* 相手のカード */}
+            <View style={styles.cardSection}>
+              <Text style={styles.label}>相手 (CPU)</Text>
+              {overlayData.computerCard && (
+                <Image
+                  source={overlayData.computerCard.img}
+                  style={styles.cardImage}
+                />
+              )}
+            </View>
 
-          {/* 自分のカード */}
-          <View style={[styles.circle, styles.bottomCircle]}>
-            <Text style={styles.label}>あなた</Text>
-            {overlayData.playerCard && (
-              <Image
-                source={overlayData.playerCard.img}
-                style={styles.cardImage}
-              />
-            )}
+            {/* 結果 */}
+            <View style={[
+              styles.resultContainer, 
+              overlayData.result === "win" 
+                ? styles.winBackground 
+                : overlayData.result === "lose" 
+                  ? styles.loseBackground 
+                  : styles.drawBackground
+            ]}>
+              <Text style={styles.resultText}>
+                {overlayData.result === "win"
+                  ? "WIN!"
+                  : overlayData.result === "lose"
+                  ? "LOSE..."
+                  : "あいこ"}
+              </Text>
+            </View>
+            <Text style={styles.resultText}>{getResultText()}</Text>
+
+            {/* 自分のカード */}
+            <View style={styles.cardSection}>
+              <Text style={styles.label}>あなた</Text>
+              {overlayData.playerCard && (
+                <Image
+                  source={overlayData.playerCard.img}
+                  style={styles.cardImage}
+                />
+              )}
+            </View>
           </View>
         </View>
-
-        {/* 閉じるボタン */}
-        <Pressable style={styles.closeButton} onPress={onClose}>
-          <Text style={styles.closeButtonText}>閉じる</Text>
-        </Pressable>
-      </View>
+      </Pressable>
     </Modal>
   );
 };
@@ -91,26 +116,43 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
   },
-  circleContainer: {
+  container: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
   circle: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    backgroundColor: "rgba(237, 59, 0, 1)",
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
+    position: "absolute",
+    height: "50%",
+    aspectRatio: 1,
+    borderRadius: 999,
+  },
+  redCircle: {
+    backgroundColor: "#ED3B00",
+  },
+  darkCircle: {
+    backgroundColor: "#434343",
   },
   topCircle: {
-    marginBottom: -50, // 円が重なるように調整
+    top: "-15%",
+    left: "50%",
+    transform: [{ translateX: "-50%" }],
   },
   bottomCircle: {
-    marginTop: -50,
+    bottom: "-15%",
+    left: "50%",
+    transform: [{ translateX: "-50%" }],
+  },
+  content: {
+    alignItems: "center",
+    width: "100%",
+    height: "100%",
+    justifyContent: "space-between",
+    paddingVertical: 60,
+  },
+  cardSection: {
+    alignItems: "center",
   },
   label: {
     fontSize: 16,
@@ -124,31 +166,25 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
   },
   resultContainer: {
-    alignItems: "center",
-    marginVertical: 16,
+    padding: 20,
+    borderRadius: 80,
+    alignItems: 'center',
+  },
+  winBackground: {
+    backgroundColor: "#ED3B00",
+  },
+  loseBackground: {
+    backgroundColor: "#282828",
+  },
+  drawBackground: {
+    backgroundColor: "#282828", // 引き分けの場合も負けと同じ背景色を使用
   },
   resultText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#fff",
-    marginBottom: 8,
-  },
-  pointText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  closeButton: {
-    marginTop: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: "#2196F3",
-    borderRadius: 8,
-  },
-  closeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    color: "#FFF",
+    fontSize: 30,
+    fontWeight: "700",
+    lineHeight: 30, // fontSize と同じ値で 100% になります
+    textAlign: "center",
   },
 });
 

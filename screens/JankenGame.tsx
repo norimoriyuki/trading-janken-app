@@ -2,7 +2,6 @@ import React from "react";
 import {
   View,
   Text,
-  Button,
   Image,
   StyleSheet,
   Pressable,
@@ -99,14 +98,7 @@ export default function JankenGame({
 
           {/* Play Area */}
           <View style={styles.playAreaContainer}>
-            {showResult ? (
-              <ResultWindow
-                showResult={showResult}
-                closeResult={closeResult}
-                drawCount={drawCount}
-                startPosition={cardPositions[showResult.playerIndex]}
-              />
-            ) : showDetail && selectedCard ? (
+            {showDetail && selectedCard ? (
               <CardDetailWindow 
                 choice={selectedCard} 
                 onClose={closeCardDetail}
