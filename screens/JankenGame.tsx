@@ -8,7 +8,6 @@ import {
   SafeAreaView,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
-import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
@@ -33,7 +32,6 @@ export default function JankenGame({
     drawCount,
     selectedCard,
     showDetail,
-    cardPositions,
     cardRefs,
     selectedCardOwner,
     resetGame,
@@ -42,11 +40,8 @@ export default function JankenGame({
     closeCardDetail,
     handleCardPress,
     handleSwipeUp,
-    showTradeOverlay,
-    closeTradeOverlay,
     setSelectedCardOwner,
     isResultVisible,
-    isTradeVisible,
     overlayData,
   } = useJankenGame(onBackClick, stageId);
 
@@ -166,11 +161,6 @@ export default function JankenGame({
           onClose={closeResult}
         />
 
-        <TradeOverlay
-          isVisible={isTradeVisible}
-          overlayData={overlayData}
-          onClose={closeTradeOverlay}
-        />
       </Pressable>
     </SafeAreaView>
   );

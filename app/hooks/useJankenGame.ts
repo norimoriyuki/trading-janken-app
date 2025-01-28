@@ -32,13 +32,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
   const [selectedCardOwner, setSelectedCardOwner] = useState<"player" | "computer" | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [cardPositions, setCardPositions] = useState<{
-    [key: number]: { x: number; y: number };
-  }>({});
 
   // Overlay State
   const [isResultVisible, setIsResultVisible] = useState(false);
-  const [isTradeVisible, setIsTradeVisible] = useState(false);
   const [overlayData, setOverlayData] = useState<{
     result: "win" | "lose" | "draw" | null;
     playerCard: ChoiceType | null;
@@ -188,18 +184,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
   };
 
-  const showTradeOverlay = (
-    playerCard: ChoiceType,
-    computerCard: ChoiceType
-  ) => {
-    setOverlayData({ result: null, playerCard, computerCard });
-    setIsTradeVisible(true);
-  };
-
-  const closeTradeOverlay = () => {
-    setIsTradeVisible(false);
-  };
-
   const handleCardPress = (choice: ChoiceType) => {
     if (!showResult && playerState !== "shuffling") {
       setSelectedCard(choice);
@@ -207,37 +191,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
   };
 
-  const updateCardPosition = (index: number) => {
-    if (cardRefs.current[index]) {
-      if (isWeb) {
-        const rect = (
-          cardRefs.current[index] as HTMLDivElement
-        )?.getBoundingClientRect();
-        if (rect) {
-          setCardPositions((prev) => ({
-            ...prev,
-            [index]: {
-              x: rect.x - window.innerWidth / 2,
-              y: rect.y - window.innerHeight / 2,
-            },
-          }));
-        }
-      } else {
-        (cardRefs.current[index] as View)?.measureInWindow(
-          (x, y, width, height) => {
-            setCardPositions((prev) => ({
-              ...prev,
-              [index]: {
-                x: x - width / 2,
-                y: y - height / 2,
-              },
-            }));
-          }
-        );
-      }
-    }
-  };
-
+ 
   const handleSwipeUp = async (index: number) => {
     await handlePlayerChoice(index);
     setShowDetail(false);
@@ -248,26 +202,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     setShowDetail(false);
     setSelectedCard(null);
   };
-
-  useEffect(() => {
-    const updateAllCardPositions = () => {
-      playerChoices.forEach((_, index) => {
-        updateCardPosition(index);
-      });
-    };
-
-    updateAllCardPositions();
-
-    // リサイズイベントのリスナーを追加
-    if (isWeb) {
-      window.addEventListener("resize", updateAllCardPositions);
-      return () => window.removeEventListener("resize", updateAllCardPositions);
-    }
-  }, [playerChoices]);
-
-  useEffect(() => {
-    setIsTradeVisible(playerState === "shuffling");
-  }, [playerState]);
 
   return {
     computerChoices,
@@ -281,7 +215,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     playerState,
     selectedCard,
     showDetail,
-    cardPositions,
     cardRefs,
     selectedCardOwner,
     handleSwipeUp,
@@ -290,11 +223,8 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     resetGame,
     closeScoreWindow,
     closeResult,
-    showTradeOverlay,
-    closeTradeOverlay,
     setSelectedCardOwner,
     isResultVisible,
-    isTradeVisible,
     overlayData,
   };
 };
