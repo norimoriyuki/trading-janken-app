@@ -114,29 +114,6 @@ const JankenCard: React.FC<JankenCardProps> = ({
   const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img || require("@assets/zari.png");
 
-  const getBorderColor = () => {
-    if (!selectedCard || isPlayerHand) return borderColor;
-
-    if (getResult(selectedCard, choice) === "win") {
-      return "rgb(0, 255, 0)";
-    } else if (getResult(selectedCard, choice) === "lose") {
-      return "rgb(255, 0, 0)";
-    }
-    return borderColor;
-  };
-
-  const getBorderWidth = () => {
-    if (!selectedCard || isPlayerHand) return 2;
-
-    if (
-      getResult(selectedCard, choice) === "win" ||
-      getResult(choice, selectedCard) === "win"
-    ) {
-      return 4;
-    }
-    return 2;
-  };
-
   const getResultText = () => {
     if (!selectedCard || isPlayerHand) return null;
 
@@ -164,8 +141,7 @@ const JankenCard: React.FC<JankenCardProps> = ({
         style={[
           styles.card,
           {
-            borderWidth: getBorderWidth(),
-            borderColor: getBorderColor(),
+            borderWidth: 0,
           },
         ]}
       >

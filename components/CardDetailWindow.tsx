@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 20,
+    marginBottom: 8,
   },
   playerDetailWindow: {
     height: '100%',
@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   playButton: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 4,
     paddingHorizontal: 16,
     backgroundColor: '#000',
     borderRadius: 20,

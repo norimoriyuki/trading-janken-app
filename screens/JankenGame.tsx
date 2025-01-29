@@ -12,7 +12,6 @@ import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
 import ResultOverlay from "@/components/ResultOverlay";
-import TradeOverlay from "@/components/TradeOverlay";
 import GameStatus from "../components/GameStatus";
 
 export default function JankenGame({
@@ -134,7 +133,7 @@ export default function JankenGame({
                     }}
                     isPlayerHand
                     showResult={showResult}
-                    hide={showDetail && selectedCard && selectedCardOwner === 'player'}
+                    hide={showDetail && selectedCard && selectedCardOwner === 'player' || false}
                   />
                 </View>
               ))}
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     backgroundColor: "#000",
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 0,
   },
   closeButton: {
     width: 24,
@@ -215,6 +214,9 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 16,
     margin: 0,
+    borderTopWidth: 4,
+    borderTopColor: "#000",
+    paddingTop: 16,
   },
   cardContainer: {
     height: '35%',  // 固定の高さを設定
@@ -225,6 +227,14 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1.847,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 7.39,
+    elevation: 5, // Androidの場合に必要
   },
   sectionTitle: {
     fontSize: 16,
