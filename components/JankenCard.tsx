@@ -8,7 +8,7 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { ChoiceType } from "../app/types/models";
 import getResult from "../app/lib/get_result";
 
@@ -25,6 +25,7 @@ interface JankenCardProps {
   } | null;
   selectedCard?: ChoiceType | null;
   hide?: boolean;
+  isNewCard?: boolean;
 }
 
 const adjustColorBrightness = (color: string): string => {
@@ -53,11 +54,30 @@ const JankenCard: React.FC<JankenCardProps> = ({
   showResult,
   selectedCard,
   hide = false,
+  isNewCard = false,
 }) => {
   if (hide) return null;
 
   const isSwipingRef = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isNewCard) {
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1.2,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isNewCard]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -131,8 +151,15 @@ const JankenCard: React.FC<JankenCardProps> = ({
       style={[
         isPlayerHand &&
           showResult === null && {
-            transform: [{ translateX: pan.x }, { translateY: pan.y }],
+            transform: [
+              { translateX: pan.x }, 
+              { translateY: pan.y },
+              { scale: scale },
+            ],
           },
+        !isPlayerHand && {
+          transform: [{ scale: scale }],
+        },
       ]}
     >
       <Pressable

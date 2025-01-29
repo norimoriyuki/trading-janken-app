@@ -42,6 +42,7 @@ export default function JankenGame({
     setSelectedCardOwner,
     isResultVisible,
     overlayData,
+    newCardIndex,
   } = useJankenGame(onBackClick, stageId);
 
   return (
@@ -84,7 +85,7 @@ export default function JankenGame({
                   }}
                   showResult={showResult}
                   selectedCard={showDetail ? selectedCard : null}
-                  hide={showDetail && selectedCard && selectedCardOwner === 'computer'}
+                  hide={showDetail && selectedCard && selectedCardOwner === 'computer' || false}
                 />
               ))}
             </View>
@@ -134,6 +135,7 @@ export default function JankenGame({
                     isPlayerHand
                     showResult={showResult}
                     hide={showDetail && selectedCard && selectedCardOwner === 'player' || false}
+                    isNewCard={newCardIndex === index}
                   />
                 </View>
               ))}

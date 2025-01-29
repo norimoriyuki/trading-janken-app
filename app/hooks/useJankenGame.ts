@@ -79,6 +79,10 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot6_purple.png"),
   ];
 
+  // New Card Indices
+  const [newCardIndices, setNewCardIndices] = useState<number[]>([]);
+  const [newCardIndex, setNewCardIndex] = useState<number | null>(null);
+
   // Functions
   const getRandomEnemyImage = () => {
     const randomImage =
@@ -169,7 +173,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
 
     if (showResult?.result) {
-      await dispatch(
+      const result = await dispatch(
         handleCardChange({
           stageId,
           result: showResult.result,
@@ -181,6 +185,13 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           drawCount,
         })
       ).unwrap();
+      
+      // カード交換が発生した場合、新しいカードのインデックスを設定
+      if (result.newPlayerIndex !== undefined) {
+        setNewCardIndex(result.newPlayerIndex);
+        // 少し遅延後にリセット
+        setTimeout(() => setNewCardIndex(null), 1000);
+      }
     }
   };
 
@@ -191,7 +202,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
   };
 
- 
   const handleSwipeUp = async (index: number) => {
     await handlePlayerChoice(index);
     setShowDetail(false);
@@ -226,5 +236,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     setSelectedCardOwner,
     isResultVisible,
     overlayData,
+    newCardIndex,
   };
 };
