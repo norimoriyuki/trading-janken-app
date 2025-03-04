@@ -22,11 +22,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    width: "100%",
   },
   label: {
     fontSize: 18,
     marginRight: 5,
+    width: 50,
   },
   heartsContainer: {
     flexDirection: "row",

@@ -6,8 +6,9 @@ import {
   PanResponder,
   Animated,
   StyleSheet,
+  Dimensions,
 } from "react-native";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { ChoiceType } from "../app/types/models";
 import getResult from "../app/lib/get_result";
 
@@ -23,6 +24,8 @@ interface JankenCardProps {
     result: string;
   } | null;
   selectedCard?: ChoiceType | null;
+  hide?: boolean;
+  isNewCard?: boolean;
 }
 
 const adjustColorBrightness = (color: string): string => {
@@ -38,7 +41,11 @@ const adjustColorBrightness = (color: string): string => {
   )}, ${Math.floor(b * brightnessAdjustment)})`;
 };
 
-export default function JankenCard({
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH * 0.25;
+const CARD_HEIGHT = CARD_WIDTH * 1.75;
+
+const JankenCard: React.FC<JankenCardProps> = ({
   choice,
   onSwipeUp,
   onCardPress,
@@ -46,9 +53,31 @@ export default function JankenCard({
   className = "",
   showResult,
   selectedCard,
-}: JankenCardProps) {
+  hide = false,
+  isNewCard = false,
+}) => {
+  if (hide) return null;
+
   const isSwipingRef = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (isNewCard) {
+      Animated.sequence([
+        Animated.timing(scale, {
+          toValue: 1.2,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scale, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isNewCard]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -105,29 +134,6 @@ export default function JankenCard({
   const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img || require("@assets/zari.png");
 
-  const getBorderColor = () => {
-    if (!selectedCard || isPlayerHand) return borderColor;
-
-    if (getResult(selectedCard, choice) === "win") {
-      return "rgb(0, 255, 0)";
-    } else if (getResult(selectedCard, choice) === "lose") {
-      return "rgb(255, 0, 0)";
-    }
-    return borderColor;
-  };
-
-  const getBorderWidth = () => {
-    if (!selectedCard || isPlayerHand) return 2;
-
-    if (
-      getResult(selectedCard, choice) === "win" ||
-      getResult(choice, selectedCard) === "win"
-    ) {
-      return 4;
-    }
-    return 2;
-  };
-
   const getResultText = () => {
     if (!selectedCard || isPlayerHand) return null;
 
@@ -145,8 +151,15 @@ export default function JankenCard({
       style={[
         isPlayerHand &&
           showResult === null && {
-            transform: [{ translateX: pan.x }, { translateY: pan.y }],
+            transform: [
+              { translateX: pan.x }, 
+              { translateY: pan.y },
+              { scale: scale },
+            ],
           },
+        !isPlayerHand && {
+          transform: [{ scale: scale }],
+        },
       ]}
     >
       <Pressable
@@ -155,8 +168,7 @@ export default function JankenCard({
         style={[
           styles.card,
           {
-            borderWidth: getBorderWidth(),
-            borderColor: getBorderColor(),
+            borderWidth: 0,
           },
         ]}
       >
@@ -171,16 +183,16 @@ export default function JankenCard({
       </Pressable>
     </Animated.View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   card: {
-    margin: 16,
-    padding: 16,
+    margin: 8,
+    padding: 8,
     borderRadius: 16,
     backgroundColor: "#fff",
-    width: 80,
-    height: 140,
+    width: CARD_WIDTH,
+    height: CARD_HEIGHT,
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
@@ -188,24 +200,28 @@ const styles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     opacity: 1,
-    shadowColor: "rgba(0, 0, 0, 0.25)",
-    shadowOffset: { width: 0, height: 1.847 },
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.25,
-    shadowRadius: 7.39,
-    elevation: 7.39, // Android 用
+    shadowRadius: 8,
+    elevation: 5,
   },
   imageWrapper: {
     position: "relative",
-    width: 80,
-    height: 80,
+    width: CARD_WIDTH * 0.8,
+    height: CARD_WIDTH * 0.8,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
   image: {
-    width: 80,
-    height: 80,
-    resizeMode: "contain",
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   cardText: {
     marginTop: 8,
@@ -227,3 +243,5 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
+
+export default JankenCard;

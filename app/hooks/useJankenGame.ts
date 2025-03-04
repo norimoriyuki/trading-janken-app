@@ -30,14 +30,11 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot1_blue.png")
   );
   const [selectedCard, setSelectedCard] = useState<ChoiceType | null>(null);
+  const [selectedCardOwner, setSelectedCardOwner] = useState<"player" | "computer" | null>(null);
   const [showDetail, setShowDetail] = useState(false);
-  const [cardPositions, setCardPositions] = useState<{
-    [key: number]: { x: number; y: number };
-  }>({});
 
   // Overlay State
   const [isResultVisible, setIsResultVisible] = useState(false);
-  const [isTradeVisible, setIsTradeVisible] = useState(false);
   const [overlayData, setOverlayData] = useState<{
     result: "win" | "lose" | "draw" | null;
     playerCard: ChoiceType | null;
@@ -81,6 +78,10 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     require("@assets/robot5_red.png"),
     require("@assets/robot6_purple.png"),
   ];
+
+  // New Card Indices
+  const [newCardIndices, setNewCardIndices] = useState<number[]>([]);
+  const [newCardIndex, setNewCardIndex] = useState<number | null>(null);
 
   // Functions
   const getRandomEnemyImage = () => {
@@ -172,7 +173,7 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     }
 
     if (showResult?.result) {
-      await dispatch(
+      const result = await dispatch(
         handleCardChange({
           stageId,
           result: showResult.result,
@@ -184,56 +185,20 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
           drawCount,
         })
       ).unwrap();
+      
+      // カード交換が発生した場合、新しいカードのインデックスを設定
+      if (result.newPlayerIndex !== undefined) {
+        setNewCardIndex(result.newPlayerIndex);
+        // 少し遅延後にリセット
+        setTimeout(() => setNewCardIndex(null), 1000);
+      }
     }
-  };
-
-  const showTradeOverlay = (
-    playerCard: ChoiceType,
-    computerCard: ChoiceType
-  ) => {
-    setOverlayData({ result: null, playerCard, computerCard });
-    setIsTradeVisible(true);
-  };
-
-  const closeTradeOverlay = () => {
-    setIsTradeVisible(false);
   };
 
   const handleCardPress = (choice: ChoiceType) => {
     if (!showResult && playerState !== "shuffling") {
       setSelectedCard(choice);
       setShowDetail(true);
-    }
-  };
-
-  const updateCardPosition = (index: number) => {
-    if (cardRefs.current[index]) {
-      if (isWeb) {
-        const rect = (
-          cardRefs.current[index] as HTMLDivElement
-        )?.getBoundingClientRect();
-        if (rect) {
-          setCardPositions((prev) => ({
-            ...prev,
-            [index]: {
-              x: rect.x - window.innerWidth / 2,
-              y: rect.y - window.innerHeight / 2,
-            },
-          }));
-        }
-      } else {
-        (cardRefs.current[index] as View)?.measureInWindow(
-          (x, y, width, height) => {
-            setCardPositions((prev) => ({
-              ...prev,
-              [index]: {
-                x: x - width / 2,
-                y: y - height / 2,
-              },
-            }));
-          }
-        );
-      }
     }
   };
 
@@ -248,26 +213,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     setSelectedCard(null);
   };
 
-  useEffect(() => {
-    const updateAllCardPositions = () => {
-      playerChoices.forEach((_, index) => {
-        updateCardPosition(index);
-      });
-    };
-
-    updateAllCardPositions();
-
-    // リサイズイベントのリスナーを追加
-    if (isWeb) {
-      window.addEventListener("resize", updateAllCardPositions);
-      return () => window.removeEventListener("resize", updateAllCardPositions);
-    }
-  }, [playerChoices]);
-
-  useEffect(() => {
-    setIsTradeVisible(playerState === "shuffling");
-  }, [playerState]);
-
   return {
     computerChoices,
     playerChoices,
@@ -280,18 +225,17 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     playerState,
     selectedCard,
     showDetail,
-    cardPositions,
     cardRefs,
+    selectedCardOwner,
     handleSwipeUp,
     handleCardPress,
     closeCardDetail,
     resetGame,
     closeScoreWindow,
     closeResult,
-    showTradeOverlay,
-    closeTradeOverlay,
+    setSelectedCardOwner,
     isResultVisible,
-    isTradeVisible,
     overlayData,
+    newCardIndex,
   };
 };

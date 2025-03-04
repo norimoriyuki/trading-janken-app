@@ -2,22 +2,17 @@ import React from "react";
 import {
   View,
   Text,
-  Button,
   Image,
   StyleSheet,
   Pressable,
   SafeAreaView,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
-import ResultWindow from "../components/ResultWindow";
 import ScoreWindow from "../components/ScoreWindow";
 import { useJankenGame } from "../app/hooks/useJankenGame";
 import CardDetailWindow from "../components/CardDetailWindow";
-import Life from "@/components/Life";
-import Score from "@/components/Score";
 import ResultOverlay from "@/components/ResultOverlay";
-import TradeOverlay from "@/components/TradeOverlay";
-import DragCardPlaceholder from "@/components/DragCardPlaceholder";
+import GameStatus from "../components/GameStatus";
 
 export default function JankenGame({
   onBackClick,
@@ -36,90 +31,121 @@ export default function JankenGame({
     drawCount,
     selectedCard,
     showDetail,
-    cardPositions,
     cardRefs,
+    selectedCardOwner,
     resetGame,
     closeScoreWindow,
     closeResult,
     closeCardDetail,
     handleCardPress,
     handleSwipeUp,
-    showTradeOverlay,
-    closeTradeOverlay,
+    setSelectedCardOwner,
     isResultVisible,
-    isTradeVisible,
     overlayData,
+    newCardIndex,
   } = useJankenGame(onBackClick, stageId);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Pressable style={styles.container} onPress={() => {}}>
         {/* Header */}
-        <View style={styles.header}>
-          <Button title="降参" onPress={resetGame} />
-          <Text style={styles.headerText}>Trading Janken</Text>
+        <View style={styles.mainContent}>
+          <View style={styles.header}>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={resetGame}
+            >
+              <Image 
+                source={require("@/assets/closeButton.png")} 
+                style={styles.closeIcon} 
+              />
+            </Pressable>
+            <Pressable 
+              style={styles.ruleButton} 
+              onPress={() => {/* ルールを表示する処理 aaa*/}}
+            >
+              <Text style={styles.ruleButtonText}>ルール</Text>
+            </Pressable>
+          </View>
+
+          {/* Enemy Card Area */}
+          <View style={[
+            styles.cardContainer,
+            showDetail && selectedCard && selectedCardOwner === 'computer' && styles.hideContainer
+          ]}>
+            <View style={styles.cardWrapper}>
+              {(computerChoices || []).map((choice, index) => (
+                <JankenCard
+                  key={`computer-card-${index}`}
+                  choice={choice}
+                  onSwipeUp={() => {}}
+                  onCardPress={() => {
+                    handleCardPress(choice);
+                    setSelectedCardOwner('computer');
+                  }}
+                  showResult={showResult}
+                  selectedCard={showDetail ? selectedCard : null}
+                  hide={showDetail && selectedCard && selectedCardOwner === 'computer' || false}
+                />
+              ))}
+            </View>
+          </View>
+
+          {/* Play Area */}
+          <View style={styles.playAreaContainer}>
+            {showDetail && selectedCard ? (
+              <CardDetailWindow 
+                choice={selectedCard} 
+                onClose={closeCardDetail}
+                onPlay={() => handleSwipeUp(playerChoices.indexOf(selectedCard))}
+                isPlayerCard={selectedCardOwner === 'player'}
+                style={selectedCardOwner === 'player' ? styles.playerDetailPosition : styles.enemyDetailPosition}
+              />
+            ) : (
+              <View style={styles.vsContainer}>
+                <View style={styles.horizontalLine} />
+                <Text style={styles.vsText}>VS</Text>
+                <View style={styles.horizontalLine} />
+              </View>
+            )}
+          </View>
+
+          {/* Player Card Area */}
+          <View style={[
+            styles.cardContainer, 
+            showDetail && selectedCard && selectedCardOwner === 'player' && styles.hideContainer
+          ]}>
+            <View style={styles.cardWrapper}>
+              {(playerChoices || []).map((choice, index) => (
+                <View
+                  key={`player-card-${index}-${choice.id}`}
+                  ref={(el) => {
+                    cardRefs.current[index] = el;
+                  }}
+                >
+                  <JankenCard
+                    choice={choice}
+                    onSwipeUp={() => handleSwipeUp(index)}
+                    onCardPress={() => {
+                      if (!showResult) {
+                        handleCardPress(choice);
+                        setSelectedCardOwner('player');
+                      }
+                    }}
+                    isPlayerHand
+                    showResult={showResult}
+                    hide={showDetail && selectedCard && selectedCardOwner === 'player' || false}
+                    isNewCard={newCardIndex === index}
+                  />
+                </View>
+              ))}
+            </View>
+          </View>
         </View>
 
         {/* Life and Score */}
         <View style={styles.infoContainer}>
-          <Life count={life} />
-          <Score score={winCount} />
-        </View>
-
-        {/* Enemy Card Area */}
-        <View style={styles.cardContainer}>
-          <Text style={styles.sectionTitle}>相手 (CPU)</Text>
-          <View style={styles.cardWrapper}>
-            {(computerChoices || []).map((choice, index) => (
-              <JankenCard
-                key={`computer-card-${index}`}
-                choice={choice}
-                onSwipeUp={() => {}}
-                onCardPress={() => handleCardPress(choice)}
-                showResult={showResult}
-                selectedCard={showDetail ? selectedCard : null}
-              />
-            ))}
-          </View>
-        </View>
-
-        {/* Play Area */}
-        <View style={styles.playAreaContainer}>
-          {showResult ? (
-            <ResultWindow
-              showResult={showResult}
-              closeResult={closeResult}
-              drawCount={drawCount}
-              startPosition={cardPositions[showResult.playerIndex]}
-            />
-          ) : showDetail && selectedCard ? (
-            <CardDetailWindow choice={selectedCard} onClose={closeCardDetail} />
-          ) : (
-            <DragCardPlaceholder />
-          )}
-        </View>
-
-        {/* Player Card Area */}
-        <View style={styles.cardContainer}>
-          <Text style={styles.sectionTitle}>あなた</Text>
-          <View style={styles.cardWrapper}>
-            {(playerChoices || []).map((choice, index) => (
-              <View
-                key={`player-card-${index}-${choice.id}`}
-                ref={(el) => {
-                  cardRefs.current[index] = el;
-                }}
-              >
-                <JankenCard
-                  choice={choice}
-                  onSwipeUp={() => handleSwipeUp(index)}
-                  onCardPress={() => !showResult && handleCardPress(choice)}
-                  isPlayerHand
-                  showResult={showResult}
-                />
-              </View>
-            ))}
-          </View>
+          <GameStatus life={life} score={winCount} />
         </View>
 
         {/* Score Window */}
@@ -136,11 +162,6 @@ export default function JankenGame({
           onClose={closeResult}
         />
 
-        <TradeOverlay
-          isVisible={isTradeVisible}
-          overlayData={overlayData}
-          onClose={closeTradeOverlay}
-        />
       </Pressable>
     </SafeAreaView>
   );
@@ -153,36 +174,69 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 16,
+    justifyContent: 'center',
+    backgroundColor: "#F5F5F5",
+  },
+  mainContent: {
+    flex: 1,
+    flexDirection: 'column',
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
+    backgroundColor: "#000",
+    padding: 16,
+    borderRadius: 0,
   },
-  headerText: {
-    fontSize: 18,
+  closeButton: {
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeIcon: {
+    width: "100%",
+    height: "100%",
+  },
+  ruleButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#fff",
+  },
+  ruleButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
-    color: "#000",
   },
   infoContainer: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
+    width: '100%',
     paddingHorizontal: 16,
+    margin: 0,
+    borderTopWidth: 4,
+    borderTopColor: "#000",
+    paddingTop: 16,
   },
   cardContainer: {
-    marginBottom: 16,
+    height: '35%',  // 固定の高さを設定
     padding: 16,
     borderRadius: 8,
-    backgroundColor: "#F5F5F5",
   },
   cardWrapper: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1.847,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 7.39,
+    elevation: 5, // Androidの場合に必要
   },
   sectionTitle: {
     fontSize: 16,
@@ -191,12 +245,46 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   playAreaContainer: {
-    flex: 1,
+    flex: 1,        // 残りのスペースを使用
     marginVertical: 16,
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 8,
-    backgroundColor: "#F5F5F5",
     padding: 16,
+  },
+  vsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 20,
+  },
+  horizontalLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: 'rgba(195, 195, 195, 0.30)',
+  },
+  vsText: {
+    color: 'rgba(195, 195, 195, 0.30)',
+    fontFamily: 'Noto Sans',
+    fontSize: 52.397,
+    fontWeight: '700',
+    marginHorizontal: 16,
+  },
+  playerDetailPosition: {
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '65%',  // enemy cards以外の部分を使用
+  },
+  enemyDetailPosition: {
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '65%',  // player cards以外の部分を使用
+  },
+  hideContainer: {
+    height: 0,
+    padding: 0,
+    margin: 0,
   },
 });

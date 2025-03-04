@@ -114,7 +114,7 @@ export const handlePlayerMove = createAsyncThunk<
  *  - 通常の引き分け         → それぞれカードを交換
  */
 export const handleCardChange = createAsyncThunk<
-  void,
+  { newPlayerIndex: number | undefined },
   {
     stageId: string;
     result: "win" | "lose" | "draw";
@@ -127,55 +127,44 @@ export const handleCardChange = createAsyncThunk<
   }
 >(
   "game/handleCardChange",
-  async (
-    {
-      stageId,
-      result,
-      playerChoices,
-      playerIndex,
-      computerChoices,
-      computerIndex,
-      winCount,
-      drawCount,
-    },
-    { dispatch }
-  ) => {
+  async ({ playerIndex, ...rest }, { dispatch }) => {
     // ▼ カードの更新だけ行う
     if (
-      result === "win" ||
-      result === "lose" ||
-      (drawCount == 0 && result === "draw")
+      rest.result === "win" ||
+      rest.result === "lose" ||
+      (rest.drawCount == 0 && rest.result === "draw")
     ) {
       // プレイヤーがコンピュータのカードを獲得
-      const newPlayerChoices = [...playerChoices];
-      newPlayerChoices[playerIndex] = computerChoices[computerIndex];
-      dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
+      const newPlayerChoices = [...rest.playerChoices];
+      newPlayerChoices[playerIndex] = rest.computerChoices[rest.computerIndex];
+      dispatch(setPlayerChoices({ stageId: rest.stageId, playerChoices: newPlayerChoices }));
       console.log("Player got computer's card");
       console.log("Player's new hand:", newPlayerChoices);
 
       // コンピュータの手札を新しくシャッフル
-      const newComputerChoices = getRandomChoices(choices, 3, winCount);
+      const newComputerChoices = getRandomChoices(choices, 3, rest.winCount);
       dispatch(
-        setComputerChoices({ stageId, computerChoices: newComputerChoices })
+        setComputerChoices({ stageId: rest.stageId, computerChoices: newComputerChoices })
       );
       console.log("Computer's new hand:", newComputerChoices);
       
-      dispatch(setPlayerState({ stageId, playerState: "shuffling" }));
+      dispatch(setPlayerState({ stageId: rest.stageId, playerState: "shuffling" }));
       setTimeout(() => {
-        dispatch(setPlayerState({ stageId, playerState: "thinking" }));
+        dispatch(setPlayerState({ stageId: rest.stageId, playerState: "thinking" }));
       }, 1000);
     } else {
       // 通常の引き分け → カード交換
-      const newPlayerChoices = [...playerChoices];
-      const newComputerChoices = [...computerChoices];
-      newPlayerChoices[playerIndex] = computerChoices[computerIndex];
-      newComputerChoices[computerIndex] = playerChoices[playerIndex];
+      const newPlayerChoices = [...rest.playerChoices];
+      const newComputerChoices = [...rest.computerChoices];
+      newPlayerChoices[playerIndex] = rest.computerChoices[rest.computerIndex];
+      newComputerChoices[rest.computerIndex] = rest.playerChoices[playerIndex];
 
-      dispatch(setPlayerChoices({ stageId, playerChoices: newPlayerChoices }));
+      dispatch(setPlayerChoices({ stageId: rest.stageId, playerChoices: newPlayerChoices }));
       dispatch(
-        setComputerChoices({ stageId, computerChoices: newComputerChoices })
+        setComputerChoices({ stageId: rest.stageId, computerChoices: newComputerChoices })
       );
     }
+    return { newPlayerIndex: playerIndex };
   }
 );
 
