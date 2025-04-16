@@ -83,6 +83,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   const [newCardIndices, setNewCardIndices] = useState<number[]>([]);
   const [newCardIndex, setNewCardIndex] = useState<number | null>(null);
 
+  // Confirm Surrender
+  const [showConfirmSurrender, setShowConfirmSurrender] = useState(false);
+
   // Functions
   const getRandomEnemyImage = () => {
     const randomImage =
@@ -213,6 +216,28 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     setSelectedCard(null);
   };
 
+  // 降参確認を表示
+  const handleSurrenderConfirm = () => {
+    setShowConfirmSurrender(true);
+  };
+
+  // 降参実行
+  const handleSurrender = () => {
+    dispatch(resetLifeAndWinCount({ stageId }));
+    setShowConfirmSurrender(false);
+    onBackClick();
+  };
+
+  // 降参キャンセル
+  const handleSurrenderCancel = () => {
+    setShowConfirmSurrender(false);
+  };
+
+  // ゲーム開始時のリセット
+  useEffect(() => {
+    dispatch(resetLifeAndWinCount({ stageId }));
+  }, []);
+
   return {
     computerChoices,
     playerChoices,
@@ -237,5 +262,9 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
     isResultVisible,
     overlayData,
     newCardIndex,
+    showConfirmSurrender,
+    handleSurrenderConfirm,
+    handleSurrender,
+    handleSurrenderCancel,
   };
 };
