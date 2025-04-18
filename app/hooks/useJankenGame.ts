@@ -12,8 +12,12 @@ import getRandomChoices from "../lib/get_random_choices";
 import { handlePlayerMove, handleCardChange } from "../stores/gameSlice";
 import { AppDispatch } from "../stores";
 import { Platform, View } from "react-native";
+import { useStageUnlock } from './useStageUnlock';
+import { stages } from '../types/stages';
 
 export const useJankenGame = (onBackClick: () => void, stageId: string) => {
+  const { unlockStage } = useStageUnlock();
+
   // Platform
   const isWeb = Platform.OS === "web";
 
@@ -80,7 +84,6 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   ];
 
   // New Card Indices
-  const [newCardIndices, setNewCardIndices] = useState<number[]>([]);
   const [newCardIndex, setNewCardIndex] = useState<number | null>(null);
 
   // Confirm Surrender
@@ -237,6 +240,35 @@ export const useJankenGame = (onBackClick: () => void, stageId: string) => {
   useEffect(() => {
     dispatch(resetLifeAndWinCount({ stageId }));
   }, []);
+
+  // winCountが変更されたときにステージ開放チェック
+  useEffect(() => {
+    const checkStageUnlock = async () => {
+      const currentStageId = parseInt(stageId);
+      const currentStage = stages.find(s => s.id === currentStageId);
+      const nextStage = stages.find(s => s.id === currentStageId + 1);
+      
+      // 現在のステージで必要な勝利数を達成したら次のステージを解放
+      if (currentStage && nextStage && winCount >= currentStage.requiredWins) {
+        console.log(`Unlocking stage ${nextStage.id} (Current wins: ${winCount})`);
+        await unlockStage(nextStage.id);
+      }
+    };
+    
+    checkStageUnlock();
+  }, [winCount, stageId]);
+
+  // スコア表示時のステージ開放チェック
+  useEffect(() => {
+    if (showScoreWindow && winCount >= 5) {
+      const currentStageId = parseInt(stageId);
+      const nextStageId = currentStageId + 1;
+      
+      if (nextStageId <= 6) { // 最大ステージ数を超えない
+        unlockStage(nextStageId);
+      }
+    }
+  }, [showScoreWindow]);
 
   return {
     computerChoices,

@@ -2,11 +2,22 @@ import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { stages } from '../app/types/stages';
+import { useStageUnlock } from '../app/hooks/useStageUnlock';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 const resultStage = { id: 'result', name: '結果画面' };
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { isStageUnlocked, loadUnlockedStages } = useStageUnlock();
+
+  // 画面がフォーカスされるたびにステージ開放状態を再読み込み
+  useFocusEffect(
+    useCallback(() => {
+      loadUnlockedStages();
+    }, [])
+  );
 
   return (
     <View style={styles.container}>
@@ -20,10 +31,20 @@ export default function HomeScreen() {
         {stages.map(stage => (
           <TouchableOpacity
             key={stage.id}
-            style={styles.stageItem}
+            style={[
+              styles.stageItem,
+              !isStageUnlocked(stage.id) && styles.lockedStage
+            ]}
             onPress={() => router.push(`/jankengame?stageId=${stage.id}`)}
+            disabled={!isStageUnlocked(stage.id)}
           >
-            <Text style={styles.stageText}>{stage.name}</Text>
+            <Text style={[
+              styles.stageText,
+              !isStageUnlocked(stage.id) && styles.lockedStageText
+            ]}>
+              {stage.name}
+              {!isStageUnlocked(stage.id) && ` (${stage.requiredWins}勝で開放)`}
+            </Text>
           </TouchableOpacity>
         ))}
         <TouchableOpacity
@@ -32,6 +53,14 @@ export default function HomeScreen() {
           onPress={() => router.push(`/jankengame?stageId=${resultStage.id}`)}
         >
           <Text style={styles.stageText}>{resultStage.name}</Text>
+        </TouchableOpacity>
+
+        {/* Profile Button */}
+        <TouchableOpacity
+          style={[styles.stageItem, styles.profileButton]}
+          onPress={() => router.push('/mypage')}
+        >
+          <Text style={styles.stageText}>プロフィール</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -94,5 +123,16 @@ const styles = StyleSheet.create({
   },
   footerItem: {
     fontSize: 18,
+  },
+  profileButton: {
+    marginTop: 20,  // ステージリストとの間隔
+    backgroundColor: '#4CAF50',  // 異なる色で区別
+  },
+  lockedStage: {
+    backgroundColor: '#cccccc',
+    opacity: 0.7,
+  },
+  lockedStageText: {
+    color: '#666666',
   },
 });
