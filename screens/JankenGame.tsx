@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Pressable,
   SafeAreaView,
+  Alert,
 } from "react-native";
 import JankenCard from "../components/JankenCard";
 import ScoreWindow from "../components/ScoreWindow";
@@ -43,7 +44,32 @@ export default function JankenGame({
     isResultVisible,
     overlayData,
     newCardIndex,
+    showConfirmSurrender,
+    handleSurrenderConfirm,
+    handleSurrender,
+    handleSurrenderCancel,
   } = useJankenGame(onBackClick, stageId);
+
+  useEffect(() => {
+    if (showConfirmSurrender) {
+      Alert.alert(
+        "降参確認",
+        "本当に降参しますか？",
+        [
+          {
+            text: "いいえ",
+            style: "cancel",
+            onPress: handleSurrenderCancel
+          },
+          {
+            text: "はい",
+            style: "destructive",
+            onPress: handleSurrender
+          }
+        ]
+      );
+    }
+  }, [showConfirmSurrender]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -53,7 +79,7 @@ export default function JankenGame({
           <View style={styles.header}>
             <Pressable 
               style={styles.closeButton} 
-              onPress={resetGame}
+              onPress={handleSurrenderConfirm}
             >
               <Image 
                 source={require("@/assets/closeButton.png")} 
