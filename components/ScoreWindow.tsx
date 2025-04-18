@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, Text, TextInput } from "react-native";
 import { Link } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface ScoreWindowProps {
   winCount: number;
@@ -14,6 +15,22 @@ const ScoreWindow: React.FC<ScoreWindowProps> = ({
   const [playerName, setPlayerName] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false); // 送信中フラグ
+  const [name, setName] = useState('');
+
+  // コンポーネントマウント時に保存された名前を読み込む
+  useEffect(() => {
+    const loadName = async () => {
+      try {
+        const savedName = await AsyncStorage.getItem('userName');
+        if (savedName) {
+          setName(savedName);
+        }
+      } catch (error) {
+        console.error('Failed to load name:', error);
+      }
+    };
+    loadName();
+  }, []);
 
   // スコアをサーバーに送信する関数
   const submitScore = async () => {
@@ -75,7 +92,7 @@ const ScoreWindow: React.FC<ScoreWindowProps> = ({
         </Text>
         <TextInput
           placeholder="名前を入力してください"
-          value={playerName}
+          value={name}
           onChangeText={(text) => {
             setPlayerName(text);
             setErrorMessage(""); // テキスト変更時にエラーメッセージをクリア

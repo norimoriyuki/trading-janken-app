@@ -20,7 +20,7 @@ interface GameState {
   stages: Record<string, StageState>;
 }
 
-const DEFAULT_LIFE = 5;
+const DEFAULT_LIFE = 2;//開発中は2にしておく
 const DEFAULT_WIN_COUNT = 0;
 const DEFAULT_COMPUTER_CHOICES: ChoiceType[] = getRandomChoices(
   choices,
