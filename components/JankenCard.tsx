@@ -90,28 +90,27 @@ const JankenCard: React.FC<JankenCardProps> = ({
       onPanResponderGrant: () => {
         isSwipingRef.current = true;
       },
-      onPanResponderMove:
-        isPlayerHand && showResult === null
-          ? Animated.event([null, { dx: pan.x, dy: pan.y }], {
-              useNativeDriver: false,
-            })
-          : undefined,
+      onPanResponderMove: (_, gestureState) => {
+        if (isPlayerHand && showResult === null) {
+          pan.setValue({
+            x: gestureState.dx,
+            y: gestureState.dy
+          });
+        }
+      },
       onPanResponderRelease: (_, gestureState) => {
-        pan.setValue({ x: 0, y: 0 });
         if (isPlayerHand && gestureState.dy < -50) {
           onSwipeUp();
-        } else {
-          isSwipingRef.current = false;
-          Animated.spring(pan, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: false,
-          }).start();
         }
+        
+        // 位置をリセット
+        pan.setValue({ x: 0, y: 0 });
+        isSwipingRef.current = false;
       },
       onPanResponderTerminate: () => {
         Animated.spring(pan, {
           toValue: { x: 0, y: 0 },
-          useNativeDriver: false,
+          useNativeDriver: true,
         }).start();
       },
     })
@@ -131,7 +130,6 @@ const JankenCard: React.FC<JankenCardProps> = ({
       other: "rgb(211, 211, 211)",
     }[choice.type] || "rgb(255, 255, 255)";
 
-  const borderColor = adjustColorBrightness(baseColor);
   const imageSource = choice.img || require("@assets/zari.png");
 
   const getResultText = () => {
